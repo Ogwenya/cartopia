@@ -1,0 +1,20 @@
+{
+    "name": "cartopia",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "api",
+        "dashboard",
+        "client"
+    ],
+    "scripts": {
+        "start": "npm run start --workspaces",
+        "start:dev": "npm run start:dev --workspaces",
+        "start:api": "npm --workspace api start",
+        "start:dashboard": "npm --workspace dashboard start",
+        "start:client": "npm --workspace client start",
+        "start:api:dev": "npm --workspace api run dev",
+        "start:dashboard:dev": "npm --workspace dashboard run dev",
+        "start:client:dev": "npm --workspace client run dev"
+    }
+}
