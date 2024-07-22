@@ -32,27 +32,6 @@ This is an e-commerce system comprising the api(NestJs and MySQL), dashboard(Nex
 - MySQL
 - Nest CLI
 
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/cartopia.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd cartopia
-   ```
-3. Install the dependencies:
-   ```bash
-   npm install
-   ```
-4. Set up the environment variables in the `.env` file
-
-5. Start the development server:
-   ```bash
-   npm start
-   ```
-
 ### License
 
 This project is licensed under the [MIT licensed](LICENSE).
