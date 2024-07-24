@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                          Int       @id @default(autoincrement())
+  firstname                   String
+  lastname                    String
+  email                       String    @unique
+  password                    String
+  role                        Role      @default(ADMIN)
+  is_active                   Boolean   @default(true)
+  password_reset_token        String?
+  password_reset_token_expiry DateTime?
+  created_at                  DateTime  @default(now())
+  updated_at                  DateTime  @updatedAt
+}
+
+enum Role {
+  SUPER_USER
+  ADMIN
+}
+
+model Advert {
+  id              Int      @id @default(autoincrement())
+  image_url       String
+  image_public_id String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model Product {
+  id             Int            @id @default(autoincrement())
+  name           String         @unique @db.VarChar(255)
+  slug           String         @unique @db.VarChar(255)
+  description    String         @db.Text
+  price          Float
+  discount_type  DiscountType   @default(NONE)
+  discount_value Float          @default(0)
+  in_stock       Int            @default(0)
+  status         ProductStatus  @default(ACTIVE)
+  images         ProductImage[]
+  orderItem      OrderItem[]
+  brand          Brand          @relation(fields: [brandId], references: [id])
+  brandId        Int
+  category       Category?      @relation(fields: [categoryId], references: [id])
+  categoryId     Int?
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DiscountType {
+  NONE
+  Percentage
+  Amount
+}
+
+model ProductImage {
+  id         Int      @id @default(autoincrement())
+  image_url  String
+  public_id  String
+  Product    Product? @relation(fields: [product_id], references: [id])
+  product_id Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Brand {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  slug       String    @unique
+  products   Product[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model Category {
+  id              Int       @id @default(autoincrement())
+  name            String    @unique
+  slug            String    @unique
+  image_url       String
+  image_public_id String
+  products        Product[]
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+}
+
+model Customer {
+  id                          Int               @id @default(autoincrement())
+  firstname                   String
+  lastname                    String
+  email                       String?
+  phone_number                String?
+  password                    String
+  password_reset_token        String?
+  password_reset_token_expiry DateTime?
+  order                       Order[]
+  shippingAddress             ShippingAddress[]
+  created_at                  DateTime          @default(now())
+  updated_at                  DateTime          @updatedAt
+}
+
+model ShippingAddress {
+  id              Int       @id @default(autoincrement())
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  customerId      Int?
+  county          String
+  location        String
+  default_address Boolean   @default(false)
+  order           Order[]
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+}
+
+model Order {
+  id                  Int             @id @default(autoincrement())
+  order_number        String          @unique
+  amount              Float
+  shipment_fee        Float
+  status              OrderStatus     @default(PENDING)
+  shipped_out_date    DateTime?
+  shippingAddress     ShippingAddress @relation(fields: [shippingAddressId], references: [id])
+  shippingAddressId   Int
+  customer            Customer        @relation(fields: [customer_id], references: [id])
+  customer_id         Int
+  items               OrderItem[]
+  mpesa_number        String
+  transaction_details Transaction?    @relation(fields: [transaction_id], references: [id])
+  transaction_id      Int?            @unique
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  CANCELED
+  COMPLETED
+}
+
+model OrderItem {
+  id            Int          @id @default(autoincrement())
+  quantity      Int
+  discount      Float
+  price         Float
+  discount_type DiscountType
+  product       Product      @relation(fields: [product_id], references: [id])
+  order         Order        @relation(fields: [order_id], references: [id])
+  product_id    Int
+  order_id      Int
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+}
+
+model Transaction {
+  id               Int      @id @default(autoincrement())
+  transaction_id   String   @unique
+  phone_number     String
+  amount           Float
+  transaction_time DateTime
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  order            Order?
+}
+
+model ShipmentCounty {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  shipmentLocation ShipmentLocation[]
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+}
+
+model ShipmentLocation {
+  id         Int            @id @default(autoincrement())
+  name       String
+  fees       Float
+  county     ShipmentCounty @relation(fields: [countyId], references: [id])
+  countyId   Int
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+}

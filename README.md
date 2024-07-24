@@ -15,12 +15,10 @@ This is an e-commerce system comprising the api(NestJs and MySQL), dashboard(Nex
 - [ ] Wishlist functionality
 - [ ] Product reviews and ratings
 - [ ] Personalized recommendations
-- [ ] Multiple payment options
+- [ ] M-Pesa payment options
 - [ ] Order tracking
 - [ ] Customer support chat
 - [ ] Mobile app integration
-- [ ] Social media sharing
-- [ ] Advanced search filters
 - [ ] Discount coupons and promotions
 
 ## Getting Started
