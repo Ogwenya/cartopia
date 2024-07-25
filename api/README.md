@@ -8,6 +8,25 @@ The documentation for Cartopia API
 $ npm install
 ```
 
+## Env Variables
+
+### ENV variables
+
+##### Database connection
+
+- `DATABASE_URL`
+
+##### authentication
+
+- `JWT_SECRET`
+
+##### Email connection
+
+- `EMAIL_ADDRESS`
+- `EMAIL_PASSWORD`
+- `EMAIL_HOST`
+- `EMAIL_PORT`
+
 ## Running the app
 
 ```bash

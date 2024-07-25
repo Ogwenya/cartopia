@@ -99,7 +99,7 @@ model Customer {
   id                          Int               @id @default(autoincrement())
   firstname                   String
   lastname                    String
-  email                       String?
+  email                       String            @unique
   phone_number                String?
   password                    String
   password_reset_token        String?

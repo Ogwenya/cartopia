@@ -20,6 +20,10 @@
         }
       }
     ],
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "assets": [
+      "email/templates/**/*"
+    ],
+    "watchAssets": true
   }
 }
