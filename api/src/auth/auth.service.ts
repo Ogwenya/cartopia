@@ -178,6 +178,9 @@ export class AuthService {
       }
 
       // check if token is correct
+      if (!user.password_reset_token) {
+        throw new BadRequestException('The reset token provided is incorrect.');
+      }
       const is_token_correct = await bcrypt.compare(
         token,
         user.password_reset_token,

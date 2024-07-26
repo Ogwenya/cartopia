@@ -1,3 +1,7 @@
 export default function Home() {
-  return <p>Dashboard application</p>;
+  return (
+    <div>
+      <p>Dashboard application</p>
+    </div>
+  );
 }

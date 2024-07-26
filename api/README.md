@@ -10,15 +10,17 @@ $ npm install
 
 ## Env Variables
 
-### ENV variables
-
 ##### Database connection
 
 - `DATABASE_URL`
 
-##### authentication
+##### Authentication
 
 - `JWT_SECRET`
+
+##### Password reset
+
+- `FRONTEND_URL`
 
 ##### Email connection
 

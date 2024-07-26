@@ -48,6 +48,8 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
@@ -65,5 +67,14 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .section-spacing {
+    @apply py-10 lg:py-16 px-6;
+  }
+  .title {
+    @apply scroll-m-20 my-5 text-4xl font-semibold tracking-tight;
   }
 }
