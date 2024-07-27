@@ -8,11 +8,11 @@ import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { isAdministrator } from '../utils/type-guards';
 import { PrismaService } from 'src/prisma.service';
 import { GenerateResetTokenDto } from './dto/reset-token.dto';
 import { ResetPasswordDto } from './dto/password-reset.dto';
 import { LoginDto } from './dto/login.dto';
+import { isAdministrator } from 'src/utils/type-guards';
 
 @Injectable()
 export class AuthService {
