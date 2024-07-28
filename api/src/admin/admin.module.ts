@@ -3,8 +3,9 @@ import { Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { UsersModule } from './users/users.module';
+import { BrandsModule } from './brands/brands.module';
 
-const modules = [UsersModule];
+const modules = [BrandsModule, UsersModule];
 
 @Module({
   imports: [
