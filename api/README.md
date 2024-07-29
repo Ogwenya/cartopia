@@ -29,6 +29,12 @@ $ npm install
 - `EMAIL_HOST`
 - `EMAIL_PORT`
 
+##### Cloudinary Media Management
+
+- `CLOUDINARY_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+
 ## Running the app
 
 ```bash

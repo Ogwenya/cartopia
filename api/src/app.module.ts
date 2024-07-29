@@ -4,6 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './shared/auth/auth.module';
 import { EmailModule } from './shared/email/email.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { EmailModule } from './shared/email/email.module';
     AdminModule,
     AuthModule,
     EmailModule,
+    CloudinaryModule,
   ],
   controllers: [],
   providers: [],

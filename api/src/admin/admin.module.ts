@@ -4,8 +4,9 @@ import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { UsersModule } from './users/users.module';
 import { BrandsModule } from './brands/brands.module';
+import { CategoriesModule } from './categories/categories.module';
 
-const modules = [BrandsModule, UsersModule];
+const modules = [BrandsModule, CategoriesModule, UsersModule];
 
 @Module({
   imports: [
