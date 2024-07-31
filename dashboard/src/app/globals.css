@@ -78,3 +78,29 @@
     @apply scroll-m-20 my-5 text-4xl font-semibold tracking-tight;
   }
 }
+
+.ck-editor,
+.ck-editor__main {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.ck-editor__editable {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.ck.ck-editor__editable_inline {
+  border-color: hsl(var(--input)) !important;
+  background-color: hsl(var(--background)) !important;
+  height: 100%;
+}
+
+.ck-toolbar {
+  background-color: hsl(var(--secondary)) !important;
+  border-color: hsl(var(--input)) !important;
+}
+
+.ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
+  box-shadow: none !important;
+}

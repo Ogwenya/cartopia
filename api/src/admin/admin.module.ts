@@ -5,8 +5,9 @@ import { AdminController } from './admin.controller';
 import { UsersModule } from './users/users.module';
 import { BrandsModule } from './brands/brands.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
 
-const modules = [BrandsModule, CategoriesModule, UsersModule];
+const modules = [BrandsModule, CategoriesModule, ProductsModule, UsersModule];
 
 @Module({
   imports: [
