@@ -6,8 +6,15 @@ import { UsersModule } from './users/users.module';
 import { BrandsModule } from './brands/brands.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
+import { ShipmentModule } from './shipment/shipment.module';
 
-const modules = [BrandsModule, CategoriesModule, ProductsModule, UsersModule];
+const modules = [
+  BrandsModule,
+  CategoriesModule,
+  ProductsModule,
+  ShipmentModule,
+  UsersModule,
+];
 
 @Module({
   imports: [
