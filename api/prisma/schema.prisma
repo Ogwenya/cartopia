@@ -26,7 +26,7 @@ enum Role {
   ADMIN
 }
 
-model Advert {
+model Campaign {
   id              Int      @id @default(autoincrement())
   image_url       String
   image_public_id String

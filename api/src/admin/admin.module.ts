@@ -7,9 +7,11 @@ import { BrandsModule } from './brands/brands.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ShipmentModule } from './shipment/shipment.module';
+import { CampaignImagesModule } from './campaign-images/campaign-images.module';
 
 const modules = [
   BrandsModule,
+  CampaignImagesModule,
   CategoriesModule,
   ProductsModule,
   ShipmentModule,
