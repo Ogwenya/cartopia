@@ -22,7 +22,7 @@
     ],
     "deleteOutDir": true,
     "assets": [
-      "email/templates/**/*"
+      "shared/email/templates/**/*"
     ],
     "watchAssets": true
   }

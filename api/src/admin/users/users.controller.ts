@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Request,
   Delete,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +16,7 @@ import { ProfileService } from 'src/shared/profile/profile.service';
 import { UpdateProfileDto } from 'src/shared/profile/dto/update-profile.dto';
 import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
 import { UpdatePasswordDto } from 'src/shared/profile/dto/update-password.dto';
+import { SuperUserGuard } from 'src/shared/auth/super-user.guard';
 
 @Controller('users')
 @ApiTags('Admin Users')
@@ -26,9 +26,30 @@ export class UsersController {
     private readonly profileService: ProfileService,
   ) {}
 
+  @UseGuards(SuperUserGuard)
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+
+  @UseGuards(SuperUserGuard)
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @UseGuards(SuperUserGuard)
+  @Patch('update-user/:id')
+  update_user(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update_user(+id, updateUserDto);
+  }
+
   @UseGuards(AllAdminsGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
+  update_profile(
+    @Param('id') id: string,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
     return this.profileService.updateProfile(+id, updateProfileDto);
   }
 
@@ -39,5 +60,11 @@ export class UsersController {
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
     return this.profileService.updatePassword(+id, updatePasswordDto);
+  }
+
+  @UseGuards(SuperUserGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.delete_user(+id);
   }
 }

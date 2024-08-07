@@ -20,4 +20,23 @@ export class EmailService {
       context: { firstname, lastname, reset_url },
     });
   }
+
+  @OnEvent('user.send-credentials')
+  async accountCredentialsEmail(data) {
+    const { email, firstname, lastname, password } = data;
+
+    const subject = 'Welcome to Cartopia';
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject,
+      template: './send-credentials',
+      context: {
+        email,
+        firstname,
+        lastname,
+        password,
+      },
+    });
+  }
 }
