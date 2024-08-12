@@ -39,4 +39,23 @@ export class EmailService {
       },
     });
   }
+
+  @OnEvent('user.welcome-email')
+  async customer_welcome_email(data) {
+    const { firstname, email } = data;
+    const homepage_url = process.env.FRONTEND_URL;
+
+    const subject = 'Welcome to Cartopia';
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject,
+      template: './welcome-email',
+      context: {
+        email,
+        firstname,
+        homepage_url,
+      },
+    });
+  }
 }

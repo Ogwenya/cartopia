@@ -40,7 +40,7 @@ export class AuthService {
             });
 
       if (!user) {
-        throw new NotFoundException('A user with this email does not exist.');
+        throw new NotFoundException('invalid email.');
       }
 
       if (isAdministrator(user)) {
@@ -208,14 +208,25 @@ export class AuthService {
       const salt = await bcrypt.genSalt(10);
       const new_Password_hashed = await bcrypt.hash(new_password, salt);
 
-      const updated_user = await this.prisma.user.update({
-        where: { id },
-        data: {
-          password: new_Password_hashed,
-          password_reset_token: null,
-          password_reset_token_expiry: null,
-        },
-      });
+      const updated_user =
+        resetPasswordDto.account_type === 'administrator'
+          ? await this.prisma.user.update({
+              where: { id },
+              data: {
+                password: new_Password_hashed,
+                password_reset_token: null,
+                password_reset_token_expiry: null,
+              },
+            })
+          : await this.prisma.customer.update({
+              where: { id },
+              data: {
+                password: new_Password_hashed,
+                password_reset_token: null,
+                password_reset_token_expiry: null,
+              },
+            });
+
       return {
         message: 'Password successfully reset, you can proceed to login.',
       };

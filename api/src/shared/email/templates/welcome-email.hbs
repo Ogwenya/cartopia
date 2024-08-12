@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Cartopia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            margin: 0 0 10px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome to Cartopia, {{firstname}}!</h1>
+        <p>We're thrilled to have you join the Cartopia family. Your shopping experience just got a whole lot easier,
+            and we're here to ensure you find everything you need.</p>
+
+        <h2>Here's what you can do next:</h2>
+        <ul>
+            <li><strong>Explore Our Collections:</strong> Discover our wide range of products tailored just for you.
+              </li>
+            <li><strong>Exclusive Deals:</strong> As a new member, enjoy a special discount on your first purchase. Use
+                code <strong>WELCOME10</strong> at checkout.</li>
+            <li><strong>Create Your Wishlist:</strong> Save your favorite items and keep track of them for later.</li>
+        </ul>
+
+        <p><a href="{{homepage_url}}" class="button">Start Shopping Now</a></p>
+
+        <p>Need Help? Our customer support team is always here for you. Whether you have questions about an order, need
+            help finding a product, or anything else, don’t hesitate to reach out to us.</p>
+
+        <p>Stay Connected: Follow us on social media for the latest updates, deals, and more.</p>
+
+        <p>Thank you for choosing Cartopia. We’re excited to help you on your shopping journey!</p>
+
+        <p>Happy Shopping,<br>
+            The Cartopia Team</p>
+
+        <div class="footer">
+            <p>P.S. Don't forget to check your inbox for more exclusive offers coming your way!</p>
+        </div>
+    </div>
+</body>
+
+</html>
