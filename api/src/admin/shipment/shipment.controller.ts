@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ShipmentService } from './shipment.service';
-import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
+import { AllAdminsGuard } from 'src/auth/all-admins.guard';
 import { CreateShipmentLocationDto } from './dto/create-shipment-location.dto';
 import { UpdateShipmentLocationDto } from './dto/update-shipment-location.dto';
 import { CreateShipmentCountyDto } from './dto/create-shipment-county.dto';

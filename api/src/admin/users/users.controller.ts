@@ -14,9 +14,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfileService } from 'src/shared/profile/profile.service';
 import { UpdateProfileDto } from 'src/shared/profile/dto/update-profile.dto';
-import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
 import { UpdatePasswordDto } from 'src/shared/profile/dto/update-password.dto';
-import { SuperUserGuard } from 'src/shared/auth/super-user.guard';
+import { AllAdminsGuard } from 'src/auth/all-admins.guard';
+import { SuperUserGuard } from 'src/auth/super-user.guard';
 
 @Controller('users')
 @ApiTags('Admin Users')

@@ -12,7 +12,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CampaignImagesService } from './campaign-images.service';
-import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
+import { AllAdminsGuard } from 'src/auth/all-admins.guard';
 
 @Controller('campaign-images')
 @UseGuards(AllAdminsGuard)

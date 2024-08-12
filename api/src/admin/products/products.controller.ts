@@ -16,7 +16,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
+import { AllAdminsGuard } from 'src/auth/all-admins.guard';
 
 @Controller('products')
 @UseGuards(AllAdminsGuard)

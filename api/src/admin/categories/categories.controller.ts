@@ -16,7 +16,7 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
+import { AllAdminsGuard } from 'src/auth/all-admins.guard';
 
 @Controller('categories')
 @UseGuards(AllAdminsGuard)

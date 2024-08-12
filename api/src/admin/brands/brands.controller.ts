@@ -12,7 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BrandsService } from './brands.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { AllAdminsGuard } from 'src/shared/auth/all-admins.guard';
+import { AllAdminsGuard } from 'src/auth/all-admins.guard';
 
 @Controller('brands')
 @UseGuards(AllAdminsGuard)

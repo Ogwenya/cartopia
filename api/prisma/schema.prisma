@@ -123,26 +123,29 @@ model ShippingAddress {
 }
 
 model Order {
-  id                  Int             @id @default(autoincrement())
-  order_number        String          @unique
+  id                  Int              @id @default(autoincrement())
+  placed              Boolean          @default(false)
+  order_number        String           @unique
   amount              Float
   shipment_fee        Float
-  status              OrderStatus     @default(PENDING)
+  status              OrderStatus      @default(PENDING)
   shipped_out_date    DateTime?
-  shippingAddress     ShippingAddress @relation(fields: [shippingAddressId], references: [id])
+  shippingAddress     ShippingAddress? @relation(fields: [shippingAddressId], references: [id])
   shippingAddressId   Int
-  customer            Customer        @relation(fields: [customer_id], references: [id])
+  customer            Customer         @relation(fields: [customer_id], references: [id])
   customer_id         Int
   items               OrderItem[]
   mpesa_number        String
-  transaction_details Transaction?    @relation(fields: [transaction_id], references: [id])
-  transaction_id      Int?            @unique
-  created_at          DateTime        @default(now())
-  updated_at          DateTime        @updatedAt
+  transaction_details Transaction?     @relation(fields: [transaction_id], references: [id])
+  transaction_id      Int?             @unique
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
 }
 
 enum OrderStatus {
   PENDING
+  PROCESSING
+  SHIPPED
   CANCELED
   COMPLETED
 }
