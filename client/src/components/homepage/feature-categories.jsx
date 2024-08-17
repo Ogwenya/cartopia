@@ -7,7 +7,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { AspectRatio } from "@radix-ui/react-aspect-ratio";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 const FeatureCategories = ({ categories }) => {
@@ -27,27 +27,23 @@ const FeatureCategories = ({ categories }) => {
     >
       <CarouselContent>
         {categories.map((category) => (
-          <CarouselItem
-            key={category.id}
-            className="basis-1/2 sm:basis-1/3 md:basis-1/4"
-          >
-            <Card className="py-4 h-full">
-              <Link href={`/shop/categories/${category.slug}`}>
-                <CardContent>
-                  <AspectRatio ratio={11 / 7}>
+          <CarouselItem key={category.id} className="basis-1/3 md:basis-1/4">
+            <Link href={`/categories/${category.slug}`} legacyBehavior>
+              <Card className="py-1 h-full rounded-none border-none shadow-none">
+                <CardContent className="py-3">
+                  <AspectRatio ratio={11 / 7} className="">
                     <img
                       src={category.image_url}
                       alt={category.name}
                       className="w-full h-full"
                     />
                   </AspectRatio>
-
-                  <CardTitle className="mt-4 text-center">
+                  <CardTitle className="mt-2 text-center text-xs">
                     {category.name}
                   </CardTitle>
                 </CardContent>
-              </Link>
-            </Card>
+              </Card>
+            </Link>
           </CarouselItem>
         ))}
       </CarouselContent>

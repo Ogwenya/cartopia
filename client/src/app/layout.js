@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import AppLayout from "@/components/layout/app-layout";
-
+import "@splidejs/react-splide/css";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });

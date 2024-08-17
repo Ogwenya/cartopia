@@ -44,7 +44,9 @@ export class UsersService {
 
       return { message: 'Account successfully created.' };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
     }
   }
 

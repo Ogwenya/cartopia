@@ -24,7 +24,7 @@ export class ProductsService {
   async findAll(productQueryDto: ProductQueryDto) {
     try {
       const { page, search } = productQueryDto;
-      const PRODUCTS_PER_PAGE = 20;
+      const PRODUCTS_PER_PAGE = 24;
 
       let query = {};
 
@@ -33,8 +33,8 @@ export class ProductsService {
           status: 'ACTIVE',
           OR: [
             { name: { contains: search } },
-            { Brand: { name: { contains: search } } },
-            { Category: { name: { contains: search } } },
+            { brand: { name: { contains: search } } },
+            { category: { name: { contains: search } } },
           ],
         };
       } else {
@@ -62,9 +62,14 @@ export class ProductsService {
 
       const total_pages = Math.ceil(total_Products / PRODUCTS_PER_PAGE);
 
-      return { products, total_pages };
+      const categories = await this.prisma.category.findMany();
+      const brands = await this.prisma.brand.findMany();
+
+      return { products, total_pages, brands, categories };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
     }
   }
 
@@ -88,7 +93,9 @@ export class ProductsService {
 
       return product;
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
     }
   }
 
@@ -182,7 +189,9 @@ export class ProductsService {
         feature_products_per_category,
       };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
     }
   }
 }

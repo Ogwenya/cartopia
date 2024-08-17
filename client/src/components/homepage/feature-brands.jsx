@@ -11,12 +11,12 @@ import {
 
 const LargeScreenLayout = async ({ brands }) => {
   return (
-    <div className="grid grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+    <div className="grid grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2">
       {brands.map((brand) => (
-        <Link href={`/shop/brands/${brand.slug}`} key={brand.id}>
+        <Link href={`/brands/${brand.slug}`} key={brand.id}>
           <Card>
-            <CardContent className="flex aspect-video items-center justify-center p-3">
-              <span className="text-lg sm:text-xl">{brand.name}</span>
+            <CardContent className="flex items-center justify-center p-0 py-3">
+              <span className="text-xs sm:text-base">{brand.name}</span>
             </CardContent>
           </Card>
         </Link>
@@ -42,12 +42,12 @@ const SmallScreenLayout = async ({ brands }) => {
     >
       <CarouselContent className="-ml-1">
         {brands.map((brand) => (
-          <CarouselItem key={brand.id} className="pl-1 basis-1/3 sm:basis-1/4">
-            <Link href={`/shop/brands/${brand.slug}`}>
+          <CarouselItem key={brand.id} className="pl-1 basis-1/4">
+            <Link href={`/brands/${brand.slug}`}>
               <div className="p-1">
                 <Card>
                   <CardContent className="flex aspect-video items-center justify-center p-3">
-                    <span className="text-lg sm:text-xl">{brand.name}</span>
+                    <span className="text-xs sm:text-base">{brand.name}</span>
                   </CardContent>
                 </Card>
               </div>

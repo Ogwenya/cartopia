@@ -38,10 +38,10 @@ export default function SignupPage() {
       return;
     }
 
-    // if (password !== confirm_password) {
-    //   set_error("Passwords do not match.");
-    //   return;
-    // }
+    if (password !== confirm_password) {
+      set_error("Passwords do not match.");
+      return;
+    }
 
     try {
       set_loading(true);

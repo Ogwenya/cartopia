@@ -9,7 +9,9 @@ export default function AppLayout({ children }) {
   return (
     <SessionProvider>
       <AppHeader />
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 md:px-8">{children}</div>
+      <div className="max-w-9xl mx-auto px-1 sm:px-2 md:px-8 bg-secondary">
+        {children}
+      </div>
       <AppFooter />
       <Toaster />
     </SessionProvider>

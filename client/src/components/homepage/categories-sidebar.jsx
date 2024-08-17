@@ -12,12 +12,15 @@ const CategoriesSidebar = ({ categories }) => {
         </div>
       ) : (
         <ScrollArea className="h-screen md:h-[80vh] top-4">
-          <div className="grid grid-cols-2 gap-4 px-5">
+          <div className="grid grid-cols-2 gap-2 px-5">
             {categories.map((category) => (
-              <Card className="py-4" key={category.id}>
-                <Link href={`/shop/categories/${category.slug}`}>
-                  <CardContent>
-                    <AspectRatio ratio={11 / 7}>
+              <Card
+                className="py-2 border-none shadow-none rounded-none"
+                key={category.id}
+              >
+                <Link href={`/categories/${category.slug}`}>
+                  <CardContent className="py-2">
+                    <AspectRatio ratio={10 / 7}>
                       <img
                         src={category.image_url}
                         alt={category.name}

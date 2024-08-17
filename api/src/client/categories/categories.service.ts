@@ -20,7 +20,9 @@ export class CategoriesService {
       });
       return categories;
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
     }
   }
 
@@ -39,7 +41,7 @@ export class CategoriesService {
 
       // pagination
       const { page } = categoryQueryDto;
-      const PRODUCTS_PER_PAGE = 20;
+      const PRODUCTS_PER_PAGE = 24;
       const page_number = page < 1 ? 1 : page;
 
       const skip_count = (page_number - 1) * PRODUCTS_PER_PAGE;
@@ -62,9 +64,14 @@ export class CategoriesService {
 
       const total_pages = Math.ceil(total_Products / PRODUCTS_PER_PAGE);
 
-      return { products, total_pages };
+      const categories = await this.findAll();
+      const brands = await this.prisma.brand.findMany();
+
+      return { products, total_pages, brands, categories };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
     }
   }
 }

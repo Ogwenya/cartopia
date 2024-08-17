@@ -30,7 +30,9 @@ async function getData() {
 
     return data;
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(
+      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know."
+    );
   }
 }
 
@@ -48,18 +50,18 @@ export default async function Home() {
 
   return (
     <section className="flex gap-x-0 h-full min-h-[calc(100vh-6rem)] relative">
-      <aside className="hidden lg:block lg:w-[500px] overflow-y-scroll ative bg-inherit">
+      <aside className="hidden lg:block lg:w-[500px] overflow-y-scroll relative">
         <CategoriesSidebar categories={categories} />
       </aside>
 
-      <aside className="lg:pl-8 mt-4 w-full lg:h-screen lg:overflow-y-scroll">
+      <aside className="lg:pl-3 mt-4 w-full lg:h-screen lg:overflow-y-scroll">
         <CampaignImages campaign_images={campaign_images} />
 
         <div className="lg:hidden my-8 lg:my-0">
           <FeatureCategories categories={categories} />
         </div>
 
-        <div className="my-5 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
+        <div className="max-md:bg-secondary bg-white my-5 py-2 max-md:p-1 grid max-md:grid-cols-2 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-md:gap-1 gap-2 px-1">
           {latest_products.map((product) => (
             <ProductCard product={product} key={product.id} />
           ))}
@@ -71,7 +73,7 @@ export default async function Home() {
           feature_products_per_brand.map((brand, index) => (
             <FeatureProductsCarousel
               title={brand.name}
-              slug={`brands/${brand.slug}`}
+              slug={`/brands/${brand.slug}`}
               products={brand.products}
               key={index}
             />
@@ -81,7 +83,7 @@ export default async function Home() {
           feature_products_per_category.map((category, index) => (
             <FeatureProductsCarousel
               title={category.name}
-              slug={`categories/${category.slug}`}
+              slug={`/categories/${category.slug}`}
               products={category.products}
               key={index}
             />
