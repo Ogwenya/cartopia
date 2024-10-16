@@ -20,6 +20,7 @@ import revalidate_data from "@/app/actions";
 
 const AddBrand = ({ access_token }) => {
   const [name, set_name] = useState("");
+  const [image, set_image] = useState(null);
   const [error, set_error] = useState(null);
   const [loading, set_loading] = useState(false);
   const [modal_open, set_modal_open] = useState(false);
@@ -27,20 +28,30 @@ const AddBrand = ({ access_token }) => {
   const add_brand = async () => {
     set_error(null);
 
-    if (!name) {
-      set_error("Provide brand name.");
+    if (!name || !image) {
+      set_error("Provide brand name and image.");
+      return;
+    }
+
+    if (!image.type.startsWith("image/")) {
+      set_error("Upload a valid image.");
+
       return;
     }
 
     try {
       set_loading(true);
+
+      const data = new FormData();
+      data.append("image", image);
+      data.append("name", name);
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v0/admin/brands`,
         {
           method: "POST",
-          body: JSON.stringify({ name }),
+          body: data,
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${access_token}`,
           },
         }
@@ -95,6 +106,18 @@ const AddBrand = ({ access_token }) => {
               type="text"
               value={name}
               onChange={(e) => set_name(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="image">Brand Image</Label>
+            <Input
+              id="image"
+              type="file"
+              onChange={(e) => set_image(e.target.files[0])}
+              accept="image/*"
               disabled={loading}
               required
             />

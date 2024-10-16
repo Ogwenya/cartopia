@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { Inter } from "next/font/google";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import AppLayout from "@/components/layout/AppLayout";
+import "react-datepicker/dist/react-datepicker.css";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
