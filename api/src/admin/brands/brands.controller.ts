@@ -7,7 +7,11 @@ import {
   Param,
   Delete,
   UseGuards,
+  UploadedFile,
+  ParseFilePipeBuilder,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BrandsService } from './brands.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
@@ -22,8 +26,21 @@ export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}
 
   @Post()
-  create(@Body() createBrandDto: CreateBrandDto) {
-    return this.brandsService.create(createBrandDto);
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @Body() createBrandDto: CreateBrandDto,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'image',
+        })
+        .build({
+          fileIsRequired: true,
+        }),
+    )
+    image: Express.Multer.File,
+  ) {
+    return this.brandsService.create(createBrandDto, image);
   }
 
   @Get()
@@ -37,8 +54,22 @@ export class BrandsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
-    return this.brandsService.update(+id, updateBrandDto);
+  @UseInterceptors(FileInterceptor('image'))
+  update(
+    @Param('id') id: string,
+    @Body() updateBrandDto: UpdateBrandDto,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'image',
+        })
+        .build({
+          fileIsRequired: false,
+        }),
+    )
+    image: Express.Multer.File,
+  ) {
+    return this.brandsService.update(+id, updateBrandDto, image);
   }
 
   @Delete(':id')

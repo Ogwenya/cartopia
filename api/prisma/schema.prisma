@@ -76,12 +76,14 @@ model ProductImage {
 }
 
 model Brand {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique
-  slug       String    @unique
-  products   Product[]
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  name            String    @unique
+  slug            String    @unique
+  image_url       String    @default("")
+  image_public_id String    @default("")
+  products        Product[]
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
 }
 
 model Category {
@@ -104,8 +106,8 @@ model Customer {
   password                    String
   password_reset_token        String?
   password_reset_token_expiry DateTime?
-  order                       Order[]
-  shippingAddress             ShippingAddress[]
+  orders                      Order[]
+  shippingAddresses           ShippingAddress[]
   created_at                  DateTime          @default(now())
   updated_at                  DateTime          @updatedAt
 }

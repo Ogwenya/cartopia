@@ -8,6 +8,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { CampaignImagesModule } from './campaign-images/campaign-images.module';
+import { PrismaService } from 'src/prisma.service';
 
 const modules = [
   BrandsModule,
@@ -27,7 +28,7 @@ const modules = [
       }),
     ),
   ],
-  providers: [AdminService],
+  providers: [AdminService, PrismaService],
   controllers: [AdminController],
 })
 export class AdminModule {}

@@ -3,15 +3,19 @@ import slugify from 'slugify';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { PrismaService } from 'src/prisma.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class BrandsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   // ***************
   // ADD NEW BRAND
   // ***************
-  async create(createBrandDto: CreateBrandDto) {
+  async create(createBrandDto: CreateBrandDto, image: Express.Multer.File) {
     try {
       const brand_already_exist = await this.prisma.brand.findUnique({
         where: { name: createBrandDto.name },
@@ -20,6 +24,11 @@ export class BrandsService {
       if (brand_already_exist) {
         throw new BadRequestException('A brand with this name does not exist.');
       }
+
+      const uploaded_image = await this.cloudinaryService.uploadFile(
+        image,
+        'cartopia/brands',
+      );
 
       const new_brand = await this.prisma.brand.create({
         data: {
@@ -30,6 +39,8 @@ export class BrandsService {
             strict: true,
             remove: /[*+~.()'"!:@]/g,
           }),
+          image_url: uploaded_image.secure_url,
+          image_public_id: uploaded_image.public_id,
         },
       });
 
@@ -75,7 +86,11 @@ export class BrandsService {
   // ***************
   // UPDATE BRAND
   // ***************
-  async update(id: number, updateBrandDto: UpdateBrandDto) {
+  async update(
+    id: number,
+    updateBrandDto: UpdateBrandDto,
+    image: Express.Multer.File,
+  ) {
     try {
       const brand = await this.prisma.brand.findUnique({
         where: { id },
@@ -85,18 +100,34 @@ export class BrandsService {
         throw new BadRequestException('A brand with this id does not exist.');
       }
 
+      const data = {
+        name: updateBrandDto.name,
+        slug: slugify(updateBrandDto.name, {
+          lower: true,
+          locale: 'en',
+          strict: true,
+          remove: /[*+~.()'"!:@]/g,
+        }),
+      };
+
+      if (image) {
+        const uploaded_image = await this.cloudinaryService.uploadFile(
+          image,
+          'cartopia/brands',
+        );
+
+        data['image_url'] = uploaded_image.secure_url;
+        data['image_public_id'] = uploaded_image.public_id;
+      }
+
       const updated_brand = await this.prisma.brand.update({
         where: { id },
-        data: {
-          name: updateBrandDto.name,
-          slug: slugify(updateBrandDto.name, {
-            lower: true,
-            locale: 'en',
-            strict: true,
-            remove: /[*+~.()'"!:@]/g,
-          }),
-        },
+        data,
       });
+
+      if (image) {
+        await this.cloudinaryService.deleteFile(brand.image_public_id);
+      }
 
       return updated_brand;
     } catch (error) {
