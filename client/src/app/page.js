@@ -1,25 +1,30 @@
+import { getServerSession } from "next-auth";
 import CampaignImages from "@/components/homepage/campaign-images";
 import CategoriesSidebar from "@/components/homepage/categories-sidebar";
 import FeatureBrands from "@/components/homepage/feature-brands";
 import FeatureCategories from "@/components/homepage/feature-categories";
 import FeatureProductsCarousel from "@/components/homepage/feature-products-carousel";
 import ProductCard from "@/components/product-card";
+import { authOptions } from "./api/auth/[...nextauth]/route";
 
 export const revalidate = 600;
 
 async function getData() {
   try {
-    const headers = {
-      Authorization: `Bearer ${process.env.API_KEY}`,
-    };
+    const session = await getServerSession(authOptions);
+
+    const headers = session
+      ? { Authorization: `Bearer ${session.access_token}` }
+      : { "X-API-KEY": process.env.API_KEY };
+
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     const response = await fetch(
       `${API_URL}/v0/client/products/feature-products`,
       {
-        headers: headers,
+        headers,
         next: { tags: ["feature-products"] },
-      }
+      },
     );
 
     const data = await response.json();
@@ -31,7 +36,7 @@ async function getData() {
     return data;
   } catch (error) {
     throw new Error(
-      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know."
+      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.",
     );
   }
 }

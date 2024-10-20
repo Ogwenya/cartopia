@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
 import MainProductsLayout from "@/components/main-products-layout";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export const revalidate = 600;
 
@@ -13,14 +15,20 @@ export async function generateMetadata({ params, searchParams }, parent) {
 }
 
 async function getData(slug, searchParams) {
+  const session = await getServerSession(authOptions);
+
+  const headers = session
+    ? { Authorization: `Bearer ${session.access_token}` }
+    : { "X-API-KEY": process.env.API_KEY };
+
   const page = searchParams.page || 1;
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/v0/client/brands/${slug}?page=${page}`,
       {
         cache: "no-store",
-        headers: { Authorization: `Bearer ${process.env.API_KEY}` },
-      }
+        headers,
+      },
     );
 
     const result = await response.json();
@@ -32,7 +40,7 @@ async function getData(slug, searchParams) {
     return result;
   } catch (error) {
     throw new Error(
-      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know."
+      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.",
     );
   }
 }
@@ -40,7 +48,7 @@ async function getData(slug, searchParams) {
 const BrandsPage = async ({ params, searchParams }) => {
   const { products, total_pages, categories, brands } = await getData(
     params.slug,
-    searchParams
+    searchParams,
   );
 
   if (!products) {

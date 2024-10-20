@@ -5,13 +5,13 @@ import { Toaster } from "@/components/ui/toaster";
 import AppHeader from "./app-header";
 import AppFooter from "./app-footer";
 
-export default function AppLayout({ children }) {
+export default function AppLayout({ totalCartItems, children }) {
   return (
     <SessionProvider>
-      <AppHeader />
-      <div className="max-w-9xl mx-auto px-1 sm:px-2 md:px-8 bg-secondary">
+      <AppHeader totalCartItems={totalCartItems} />
+      <main className="max-w-9xl mx-auto px-1 sm:px-2 md:px-8 mt-4 bg-secondary">
         {children}
-      </div>
+      </main>
       <AppFooter />
       <Toaster />
     </SessionProvider>

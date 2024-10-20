@@ -9,7 +9,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 
-const LargeScreenLayout = async ({ brands }) => {
+const LargeScreenLayout = ({ brands }) => {
   return (
     <div className="grid grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2">
       {brands.map((brand) => (
@@ -25,7 +25,7 @@ const LargeScreenLayout = async ({ brands }) => {
   );
 };
 
-const SmallScreenLayout = async ({ brands }) => {
+const SmallScreenLayout = ({ brands }) => {
   return (
     <Carousel
       opts={{

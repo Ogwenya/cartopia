@@ -1,40 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { ShoppingCart } from "lucide-react";
+import { Loader, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import update_cart from "@/lib/update-cart";
 
-const AddToCartButton = ({ product, number_of_products, className }) => {
-  const [page_loaded, set_page_loaded] = useState(false);
+const AddToCartButton = ({ product, className }) => {
+  const { data: session, status } = useSession();
+  const { toast } = useToast();
 
   const add_to_cart = async () => {
-    console.log("will add logic here...");
+    if (status === "unauthenticated") {
+      toast({
+        variant: "destructive",
+        title: "Not Authenticated",
+        description: "Please login to add products to cart.",
+      });
+      return;
+    } else {
+      await update_cart({
+        operation: "add",
+        product,
+        toast,
+        access_token: session.access_token,
+      });
+    }
   };
-
-  useEffect(() => {
-    set_page_loaded(true);
-  }, []);
 
   return (
     <>
-      {page_loaded && (
+      {status === "loading" ? (
         <Button
           className={cn(
             "group/cart_btn flex items-center justify-between transition-colors bg-secondary/40 text-secondary-foreground hover:text-primary-foreground hover:bg-primary/90 relative",
-            className
+            className,
+          )}
+        >
+          <Loader className="mr-2 h-4 w-4 animate-spin" />
+        </Button>
+      ) : (
+        <Button
+          className={cn(
+            "group/cart_btn flex items-center justify-between transition-colors bg-secondary/40 text-secondary-foreground hover:text-primary-foreground hover:bg-primary/90 relative",
+            className,
           )}
           onClick={add_to_cart}
         >
           <span className="flex-1 max-md:hidden">Add</span>
           <ShoppingCart className="h-4 md:hidden" />
-          <Button
-            size="icon"
-            className="absolute right-0 top-0 bottom-0 bg-secondary shadow-none text-secondary-foreground group-hover/cart_btn:bg-primary group-hover/cart_btn:text-primary-foreground"
-          >
+
+          <span className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground group-hover/cart_btn:bg-primary group-hover/cart_btn:text-primary-foreground">
             <PlusIcon />
-          </Button>
+          </span>
         </Button>
       )}
     </>

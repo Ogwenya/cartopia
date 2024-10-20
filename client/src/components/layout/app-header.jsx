@@ -12,10 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import SearchBar from "../search-bar";
-import CartIcon from "./cart-icon";
 
-const AppHeader = () => {
-  const { status, data: session, update: updateSession } = useSession();
+const AppHeader = ({ totalCartItems }) => {
+  const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur flex-none transition-colors duration-500 lg:z-50 bg-white/95 supports-backdrop-blur:bg-white/60">
@@ -36,7 +35,15 @@ const AppHeader = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <CartIcon />
+            {/*cart icon*/}
+            <Link href="/cart">
+              <div className="relative">
+                <ShoppingCart className="w-5 h-5 text-primary" />
+                <div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-4 -right-4">
+                  {totalCartItems}
+                </div>
+              </div>
+            </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

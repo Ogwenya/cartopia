@@ -49,6 +49,7 @@ model Product {
   brand          Brand          @relation(fields: [brandId], references: [id])
   brandId        Int
   category       Category?      @relation(fields: [categoryId], references: [id])
+  cart_items     CartItem[]
   categoryId     Int?
   created_at     DateTime       @default(now())
   updated_at     DateTime       @updatedAt
@@ -108,6 +109,7 @@ model Customer {
   password_reset_token_expiry DateTime?
   orders                      Order[]
   shippingAddresses           ShippingAddress[]
+  cart                        Cart?
   created_at                  DateTime          @default(now())
   updated_at                  DateTime          @updatedAt
 }
@@ -124,9 +126,26 @@ model ShippingAddress {
   updated_at      DateTime  @updatedAt
 }
 
+model Cart {
+  id          Int        @id @default(autoincrement())
+  customer    Customer   @relation(fields: [customer_id], references: [id])
+  items       CartItem[]
+  customer_id Int        @unique
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+}
+
+model CartItem {
+  id         Int     @id @default(autoincrement())
+  quantity   Int
+  product    Product @relation(fields: [product_id], references: [id])
+  cart       Cart    @relation(fields: [cart_id], references: [id])
+  product_id Int     @unique
+  cart_id    Int
+}
+
 model Order {
   id                  Int              @id @default(autoincrement())
-  placed              Boolean          @default(false)
   order_number        String           @unique
   amount              Float
   shipment_fee        Float

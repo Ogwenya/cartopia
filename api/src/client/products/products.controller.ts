@@ -1,9 +1,19 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Req,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { ProductQueryDto } from './dto/product-query.dto';
+import { CustomerOrAPIKeyGuard } from 'src/auth/customer-or-api-key.guard';
 
 @Controller('products')
+@UseGuards(CustomerOrAPIKeyGuard)
 @ApiTags('Frontend Products')
 @ApiBearerAuth('defaultBearerAuth')
 export class ProductsController {
@@ -20,7 +30,9 @@ export class ProductsController {
   }
 
   @Get(':slug')
-  findOne(@Param('slug') slug: string) {
-    return this.productsService.findOne(slug);
+  findOne(@Param('slug') slug: string, @Req() request: Request) {
+    const logged_in_user = request['logged_in_user'];
+
+    return this.productsService.findOne(slug, logged_in_user?.id);
   }
 }

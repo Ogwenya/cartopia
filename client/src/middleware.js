@@ -7,16 +7,15 @@ export async function middleware(request) {
     req: request,
   });
 
-  /* 
-    Redirect user to homepage if they try to access login page if already
-    logged in
-  */
   if (token && request.nextUrl.pathname.startsWith("/auth")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
+
+  if (!token && request.nextUrl.pathname === "/cart") {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
     /*

@@ -10,7 +10,7 @@ import { Request } from 'express';
 export class APIKeyGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = request.headers['x-api-key'];
 
     if (!token) {
       throw new UnauthorizedException('Auth token not provided.');
@@ -23,14 +23,11 @@ export class APIKeyGuard implements CanActivate {
         throw new UnauthorizedException('Invalid API KEY');
       }
 
+      request['logged_in_user'] = null;
+
       return true;
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
   }
 }

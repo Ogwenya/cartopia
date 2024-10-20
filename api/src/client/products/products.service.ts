@@ -76,7 +76,16 @@ export class ProductsService {
   // ****************************
   // GET single PRODUCT per slug
   // ****************************
-  async findOne(slug: string) {
+  async findOne(slug: string, customer_id: number) {
+    const include_cart_items = customer_id
+      ? {
+          where: {
+            cart: {
+              customer_id: customer_id,
+            },
+          },
+        }
+      : false;
     try {
       const product = await this.prisma.product.findUnique({
         where: { slug },
@@ -84,6 +93,7 @@ export class ProductsService {
           brand: true,
           category: true,
           images: true,
+          cart_items: include_cart_items,
         },
       });
 
@@ -125,7 +135,7 @@ export class ProductsService {
         where: {
           products: {
             some: {
-              status: 'ACTIVE', // Ensure there's at least one active product
+              status: 'ACTIVE',
             },
           },
         },
@@ -138,7 +148,7 @@ export class ProductsService {
         include: {
           products: {
             where: {
-              status: 'ACTIVE', // Fetch only active products
+              status: 'ACTIVE',
             },
             include: {
               brand: true,
@@ -155,7 +165,7 @@ export class ProductsService {
           where: {
             products: {
               some: {
-                status: 'ACTIVE', // Ensure there's at least one active product
+                status: 'ACTIVE',
               },
             },
           },
@@ -168,7 +178,7 @@ export class ProductsService {
           include: {
             products: {
               where: {
-                status: 'ACTIVE', // Fetch only active products
+                status: 'ACTIVE',
               },
               include: {
                 brand: true,

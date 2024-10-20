@@ -1,4 +1,6 @@
+import { getServerSession } from "next-auth";
 import MainProductsLayout from "@/components/main-products-layout";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
 export const metadata = {
   title: "Shop",
@@ -7,6 +9,12 @@ export const metadata = {
 export const revalidate = 600;
 
 async function getData(searchParams) {
+  const session = await getServerSession(authOptions);
+
+  const headers = session
+    ? { Authorization: `Bearer ${session.access_token}` }
+    : { "X-API-KEY": process.env.API_KEY };
+
   const page = searchParams.page || 1;
   const search = searchParams.search;
   try {
@@ -18,8 +26,8 @@ async function getData(searchParams) {
       `${process.env.NEXT_PUBLIC_API_URL}/v0/client/${url}`,
       {
         cache: "no-store",
-        headers: { Authorization: `Bearer ${process.env.API_KEY}` },
-      }
+        headers,
+      },
     );
 
     const result = await response.json();
@@ -31,14 +39,14 @@ async function getData(searchParams) {
     return result;
   } catch (error) {
     throw new Error(
-      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know."
+      "Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.",
     );
   }
 }
 
 const CatalogPage = async ({ searchParams }) => {
   const { products, total_pages, categories, brands } = await getData(
-    searchParams
+    searchParams,
   );
 
   return (
