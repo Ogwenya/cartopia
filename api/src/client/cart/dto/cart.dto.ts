@@ -9,10 +9,10 @@ import {
 export class CartDto {
 	@IsNotEmpty()
 	@IsString()
-	@IsEnum(['add', 'remove'], {
+	@IsEnum(['add', 'remove', 'delete'], {
 		message: 'Operation not recognized.',
 	})
-	operation: 'add' | 'remove';
+	operation: 'add' | 'remove' | 'delete';
 
 	@IsNumber()
 	@IsPositive()

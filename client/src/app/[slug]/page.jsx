@@ -4,8 +4,9 @@ import { getServerSession } from "next-auth";
 import { Badge } from "@/components/ui/badge";
 import calculate_discount from "@/lib/calculate-discounts";
 import ProductImagesCarousel from "./product-images-carousel";
-import CartButtons from "./cart-buttons";
 import { authOptions } from "../api/auth/[...nextauth]/route";
+import ChangeCartQuantityButtons from "@/components/change-cart-quantity-buttons";
+import AddToCartButton from "@/components/add-to-cart-button";
 
 export async function generateMetadata({ params, searchParams }, parent) {
 	const product = await fetch(
@@ -32,32 +33,33 @@ async function getData(slug) {
 		? { Authorization: `Bearer ${session.access_token}` }
 		: { "X-API-KEY": process.env.API_KEY };
 
-	try {
-		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}/v0/client/products/${slug}`,
-			{ headers },
-		);
+	const response = await fetch(
+		`${process.env.NEXT_PUBLIC_API_URL}/v0/client/products/${slug}`,
+		{ headers },
+	);
 
-		const product = await response.json();
+	const product = await response.json();
 
-		if (product.error) {
-			if (product.message === "Not Found") {
-				notFound();
-			} else {
-				throw new Error(product.message);
-			}
+	if (product.error) {
+		if (product.message === "Not Found") {
+			notFound();
 		}
 
-		return { product, access_token: session ? session.access_token : null };
-	} catch (error) {
-		throw new Error(error.message);
+		throw new Error(product.message);
 	}
+
+	return { product, access_token: session ? session.access_token : null };
 }
 
 const productDetails = async ({ params }) => {
 	const { product, access_token } = await getData(params.slug);
 
 	const { after_discount_price } = calculate_discount(product);
+
+	const quantity_in_cart =
+		product.cart_items && product.cart_items.length > 0
+			? product.cart_items[0].quantity
+			: 0;
 
 	return (
 		<section className="min-h-screen max-w-5xl mx-auto py-12 px-4 bg-white">
@@ -114,10 +116,23 @@ const productDetails = async ({ params }) => {
 						)}
 					</div>
 
-					<CartButtons
-						product={product}
-						access_token={access_token}
-					/>
+					{/*cart buttons*/}
+					<div>
+						{quantity_in_cart > 0 ? (
+							<ChangeCartQuantityButtons
+								product={product}
+								quantity={quantity_in_cart}
+								access_token={access_token}
+							/>
+						) : (
+							<div className="w-full">
+								<AddToCartButton
+									product={product}
+									className="w-full max-w-md"
+								/>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 

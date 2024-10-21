@@ -103,9 +103,7 @@ export class ProductsService {
 
       return product;
     } catch (error) {
-      throw new BadRequestException(
-        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
-      );
+      throw new BadRequestException(error.message);
     }
   }
 

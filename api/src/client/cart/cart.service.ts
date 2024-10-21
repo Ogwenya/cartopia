@@ -13,7 +13,9 @@ export class CartService {
     try {
       const cart = await this.prisma.cart.findUnique({
         where: { customer_id },
-        include: { items: true },
+        include: {
+          items: { include: { product: { include: { images: true } } } },
+        },
       });
 
       return cart ? cart : {};
@@ -27,66 +29,68 @@ export class CartService {
   //##################################
   // ########## UPDATE CART ##########
   //##################################
-  async update_cart(customer_id: number, createCartDto: CartDto) {
+  async update_cart(customer_id: number, cartDto: CartDto) {
     try {
       const cart = await this.prisma.cart.findUnique({
         where: { customer_id },
         include: { items: true },
       });
 
-      if (!cart) {
-        if (createCartDto.operation === 'remove') {
-          throw new BadRequestException('Product does not exist in cart.');
-        }
+      const cart_item = cart
+        ? await this.prisma.cartItem.findUnique({
+            where: { cart_id: cart.id, product_id: cartDto.product_id },
+          })
+        : null;
 
-        await this.prisma.cartItem.create({
-          data: {
-            product: { connect: { id: createCartDto.product_id } },
-            quantity: 1,
-            cart: {
-              create: {
-                customer: { connect: { id: customer_id } },
-              },
-            },
-          },
-        });
-      } else {
-        const cart_item = await this.prisma.cartItem.findUnique({
-          where: { cart_id: cart.id, product_id: createCartDto.product_id },
-        });
+      switch (cartDto.operation) {
+        case 'add':
+          cart_item
+            ? await this.prisma.cartItem.update({
+                where: { id: cart_item.id },
+                data: {
+                  quantity: cart_item.quantity + 1,
+                },
+              })
+            : await this.prisma.cartItem.create({
+                data: {
+                  product: { connect: { id: cartDto.product_id } },
+                  quantity: 1,
+                  cart: {
+                    connectOrCreate: {
+                      where: { id: cart.id },
+                      create: { customer: { connect: { id: customer_id } } },
+                    },
+                  },
+                },
+              });
 
-        if (createCartDto.operation === 'remove') {
-          if (cart_item.quantity === 1) {
-            await this.prisma.cartItem.delete({
-              where: { id: cart_item.id },
-            });
-          } else {
-            await this.prisma.cartItem.update({
-              where: { id: cart_item.id },
-              data: {
-                quantity: cart_item.quantity - 1,
-              },
-            });
+          break;
+
+        case 'remove':
+          if (!cart) {
+            throw new BadRequestException('Product does not exist in cart.');
           }
-        } else {
-          if (!cart_item) {
-            await this.prisma.cartItem.create({
-              data: {
-                product: { connect: { id: createCartDto.product_id } },
-                quantity: 1,
-                cart: { connect: { id: cart.id } },
-              },
-            });
-          } else {
-            await this.prisma.cartItem.update({
-              where: { id: cart_item.id },
-              data: {
-                quantity: cart_item.quantity + 1,
-              },
-            });
-          }
-        }
+
+          cart_item.quantity === 1
+            ? await this.prisma.cartItem.delete({
+                where: { id: cart_item.id },
+              })
+            : await this.prisma.cartItem.update({
+                where: { id: cart_item.id },
+                data: {
+                  quantity: cart_item.quantity - 1,
+                },
+              });
+
+          break;
+
+        case 'delete':
+          await this.prisma.cartItem.delete({
+            where: { product_id: cartDto.product_id },
+          });
+          break;
       }
+
       return { message: 'cart updated' };
     } catch (error) {
       console.log(error);
