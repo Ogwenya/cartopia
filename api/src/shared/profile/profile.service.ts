@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -8,7 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { isAdministrator } from 'src/utils/type-guards';
+import { isAdministrator, isCustomer } from 'src/utils/type-guards';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
@@ -70,9 +71,22 @@ export class ProfileService {
   // ********************
   // UPDATE USER PROFILE
   // ********************
-  async updateProfile(id: number, updateProfileDto: UpdateProfileDto) {
+  async updateProfile(
+    id: number,
+    logged_in_user,
+    updateProfileDto: UpdateProfileDto,
+  ) {
     try {
       const user = await this.findOneById(id, updateProfileDto.account_type);
+
+      if (
+        user.id !== logged_in_user.id ||
+        user.firstname !== logged_in_user.firstname ||
+        user.lastname !== logged_in_user.lastname ||
+        user.email !== logged_in_user.email
+      ) {
+        throw new NotAcceptableException();
+      }
 
       const data = {
         firstname: updateProfileDto.firstname,
@@ -88,7 +102,7 @@ export class ProfileService {
             })
           : await this.prisma.customer.update({
               where: { id },
-              data,
+              data: { ...data, phone_number: updateProfileDto.phone_number },
             });
 
       const payload = {
@@ -102,6 +116,11 @@ export class ProfileService {
         payload['role'] = updated_user.role;
         payload['is_active'] = updated_user.is_active;
       }
+
+      if (isCustomer(updated_user)) {
+        payload['phone_number'] = updated_user.phone_number;
+      }
+
       return {
         access_token: await this.jwtService.signAsync(payload),
         message: 'Profile updated successfully.',
@@ -114,10 +133,23 @@ export class ProfileService {
   // *****************
   // UPDATE PASSWORD
   // *****************
-  async updatePassword(id: number, updatePasswordDto: UpdatePasswordDto) {
+  async updatePassword(
+    id: number,
+    logged_in_user,
+    updatePasswordDto: UpdatePasswordDto,
+  ) {
     try {
       // confirm if user exist
       const user = await this.findOneById(id, updatePasswordDto.account_type);
+
+      if (
+        user.id !== logged_in_user.id ||
+        user.firstname !== logged_in_user.firstname ||
+        user.lastname !== logged_in_user.lastname ||
+        user.email !== logged_in_user.email
+      ) {
+        throw new NotAcceptableException();
+      }
 
       const { current_password, new_password, confirm_new_password } =
         updatePasswordDto;

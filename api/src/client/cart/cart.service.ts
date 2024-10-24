@@ -99,4 +99,31 @@ export class CartService {
       );
     }
   }
+
+  //########################################
+  // ########## GET CHECKOUT DATA ##########
+  //########################################
+  async checkout(customer_id: number) {
+    try {
+      const cart = await this.prisma.cart.findUnique({
+        where: { customer_id },
+        include: {
+          items: { include: { product: { include: { images: true } } } },
+        },
+      });
+
+      const shipping_addresses = await this.prisma.shippingAddress.findMany({
+        where: {
+          customerId: customer_id,
+        },
+      });
+
+      return { cart, shipping_addresses };
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
+    }
+  }
 }

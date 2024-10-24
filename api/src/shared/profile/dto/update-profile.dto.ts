@@ -2,6 +2,8 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
   IsString,
   MinLength,
 } from 'class-validator';
@@ -21,6 +23,11 @@ export class UpdateProfileDto {
   @IsString()
   @IsEmail()
   email: string;
+
+  @IsString()
+  @IsPhoneNumber('KE')
+  @IsOptional()
+  phone_number?: string;
 
   @IsNotEmpty()
   @IsString()

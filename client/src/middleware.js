@@ -11,6 +11,10 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  if (!token && request.nextUrl.pathname.startsWith("/account")) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
   if (!token && request.nextUrl.pathname === "/cart") {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }

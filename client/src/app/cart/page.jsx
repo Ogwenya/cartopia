@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import calculate_discount from "@/lib/calculate-discounts";
 import CartButtons from "./cart-buttons";
 
+export const metadata = {
+	title: "Cart",
+};
+
 async function fetch_cart() {
 	const { access_token } = await getServerSession(authOptions);
 

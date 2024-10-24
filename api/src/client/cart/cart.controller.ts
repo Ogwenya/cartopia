@@ -22,9 +22,15 @@ export class CartController {
     return this.cartService.find_cart(logged_in_user.id);
   }
 
-  @Patch()
-  update_cart(@Req() request: Request, @Body() createCartDto: CartDto) {
+  @Get('checkout')
+  checkout(@Req() request: Request) {
     const logged_in_user = request['logged_in_user'];
-    return this.cartService.update_cart(logged_in_user.id, createCartDto);
+    return this.cartService.checkout(logged_in_user.id);
+  }
+
+  @Patch()
+  update_cart(@Req() request: Request, @Body() cartDto: CartDto) {
+    const logged_in_user = request['logged_in_user'];
+    return this.cartService.update_cart(logged_in_user.id, cartDto);
   }
 }

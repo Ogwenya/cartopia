@@ -6,7 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -48,18 +50,30 @@ export class UsersController {
   @Patch(':id')
   update_profile(
     @Param('id') id: string,
+    @Req() request: Request,
     @Body() updateProfileDto: UpdateProfileDto,
   ) {
-    return this.profileService.updateProfile(+id, updateProfileDto);
+    const logged_in_user = request['logged_in_user'];
+    return this.profileService.updateProfile(
+      +id,
+      logged_in_user,
+      updateProfileDto,
+    );
   }
 
   @UseGuards(AllAdminsGuard)
   @Patch('update-password/:id')
   updatePassword(
     @Param('id') id: string,
+    @Req() request: Request,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.profileService.updatePassword(+id, updatePasswordDto);
+    const logged_in_user = request['logged_in_user'];
+    return this.profileService.updatePassword(
+      +id,
+      logged_in_user,
+      updatePasswordDto,
+    );
   }
 
   @UseGuards(SuperUserGuard)

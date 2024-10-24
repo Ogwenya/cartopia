@@ -6,6 +6,7 @@ import { BrandsModule } from './brands/brands.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CampaignImagesModule } from './campaign-images/campaign-images.module';
 import { CartModule } from './cart/cart.module';
+import { OrdersModule } from './orders/orders.module';
 
 const modules = [
   ProductsModule,
@@ -24,6 +25,7 @@ const modules = [
         return { path: 'client', module };
       }),
     ),
+    OrdersModule,
   ],
 })
 export class ClientModule {}

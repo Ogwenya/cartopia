@@ -61,19 +61,25 @@ const AppHeader = ({ totalCartItems }) => {
                 {session ? (
                   <>
                     <DropdownMenuItem>
-                      <Link href="/profile" className="flex items-center">
+                      <Link href="/account" className="flex items-center">
                         <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
+                        <span>Account</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link href="/profile" className="flex items-center">
+                      <Link
+                        href="/account/orders"
+                        className="flex items-center"
+                      >
                         <ReaderIcon className="mr-2 h-4 w-4" />
                         <span>Orders</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link href="/profile" className="flex items-center">
+                      <Link
+                        href="/account/addresses"
+                        className="flex items-center"
+                      >
                         <MapPin className="mr-2 h-4 w-4" />
                         <span>Address Book</span>
                       </Link>
