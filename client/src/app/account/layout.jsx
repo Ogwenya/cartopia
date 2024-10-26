@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  DesktopSidebar,
+  LargeScreenSidebar,
   SmallScreenSidebar,
 } from "@/components/account/account-sidebar";
 
@@ -8,10 +8,10 @@ export const metadata = {
   title: "Account",
 };
 
-const DesktopLayout = ({ children }) => {
+const LargeScreenLayout = ({ children }) => {
   return (
     <div className="flex gap-x-5 max-w-5xl min-h-[60svh] py-5 mx-auto">
-      <DesktopSidebar />
+      <LargeScreenSidebar />
       <div className="flex-1 ">
         <Card className="h-full py-4">
           <CardContent className="h-full">{children}</CardContent>
@@ -35,10 +35,10 @@ const SmallScreenLayout = ({ children }) => {
 export default async function RootLayout({ children }) {
   return (
     <section>
-      <div className="max-md:hidden">
-        <DesktopLayout>{children}</DesktopLayout>
+      <div className="max-lg:hidden">
+        <LargeScreenLayout>{children}</LargeScreenLayout>
       </div>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <SmallScreenLayout>{children}</SmallScreenLayout>
       </div>
     </section>

@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import sidebar_items from "./sidebar-items";
 
-export function DesktopSidebar() {
+export function LargeScreenSidebar() {
   const pathname = usePathname();
   return (
     <Card className="min-w-[280px] lg:min-w-[300px] py-4">
@@ -46,7 +46,7 @@ export function SmallScreenSidebar() {
             {
               sidebar_items.filter(
                 (item) => item.link === pathname.replace("/account", ""),
-              )[0].label
+              )[0]?.label
             }
           </span>
         </div>

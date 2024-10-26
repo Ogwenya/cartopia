@@ -1,9 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class OrdersService {
+  constructor(private prisma: PrismaService) {}
+
   //###################################
   // ########## CREATE ORDER ##########
   //###################################
@@ -18,9 +25,16 @@ export class OrdersService {
   //######################################
   // ########## FIND ALL ORDERS ##########
   //######################################
-  async findAll() {
+  async findAll(customer_id: number) {
     try {
-      return `This action returns all orders`;
+      const orders = await this.prisma.order.findMany({
+        where: { customer_id },
+        include: {
+          items: { include: { product: { include: { images: true } } } },
+        },
+      });
+
+      return orders;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -29,9 +43,22 @@ export class OrdersService {
   //#################################
   // ########## FIND ORDER ##########
   //#################################
-  async findOne(id: number) {
+  async findOne(order_number: string) {
     try {
-      return `This action returns a #${id} order`;
+      const order = await this.prisma.order.findUnique({
+        where: { order_number },
+        include: {
+          shippingAddress: true,
+          transaction_details: true,
+          items: { include: { product: { include: { images: true } } } },
+        },
+      });
+
+      if (!order) {
+        throw new NotFoundException();
+      }
+
+      return order;
     } catch (error) {
       throw new BadRequestException(error.message);
     }

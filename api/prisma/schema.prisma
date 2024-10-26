@@ -118,8 +118,11 @@ model ShippingAddress {
   id              Int       @id @default(autoincrement())
   customer        Customer? @relation(fields: [customerId], references: [id])
   customerId      Int?
+  name            String
+  phone_number    String
   county          String
-  location        String
+  town            String
+  area            String
   default_address Boolean   @default(false)
   order           Order[]
   created_at      DateTime  @default(now())
@@ -156,7 +159,6 @@ model Order {
   customer            Customer         @relation(fields: [customer_id], references: [id])
   customer_id         Int
   items               OrderItem[]
-  mpesa_number        String
   transaction_details Transaction?     @relation(fields: [transaction_id], references: [id])
   transaction_id      Int?             @unique
   created_at          DateTime         @default(now())
@@ -181,6 +183,8 @@ model OrderItem {
   order         Order        @relation(fields: [order_id], references: [id])
   product_id    Int
   order_id      Int
+  product_name  String       @db.VarChar(255)
+  product_image String
   created_at    DateTime     @default(now())
   updated_at    DateTime     @updatedAt
 }
@@ -197,19 +201,32 @@ model Transaction {
 }
 
 model ShipmentCounty {
-  id               Int                @id @default(autoincrement())
-  name             String             @unique
-  shipmentLocation ShipmentLocation[]
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @updatedAt
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  shipmentTowns ShipmentTowns[]
+  active        Boolean         @default(true)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
 }
 
-model ShipmentLocation {
-  id         Int            @id @default(autoincrement())
+model ShipmentTowns {
+  id             Int            @id @default(autoincrement())
+  name           String
+  county         ShipmentCounty @relation(fields: [countyId], references: [id])
+  shipment_areas ShipmentArea[]
+  countyId       Int
+  active         Boolean        @default(true)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+}
+
+model ShipmentArea {
+  id         Int           @id @default(autoincrement())
   name       String
   fees       Float
-  county     ShipmentCounty @relation(fields: [countyId], references: [id])
-  countyId   Int
-  created_at DateTime       @default(now())
-  updated_at DateTime       @updatedAt
+  town       ShipmentTowns @relation(fields: [townId], references: [id])
+  townId     Int
+  active     Boolean       @default(true)
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
 }

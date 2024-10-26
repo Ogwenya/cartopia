@@ -15,6 +15,7 @@ const modules = [
   CategoriesModule,
   CampaignImagesModule,
   CartModule,
+  OrdersModule,
 ];
 
 @Module({
@@ -25,7 +26,6 @@ const modules = [
         return { path: 'client', module };
       }),
     ),
-    OrdersModule,
   ],
 })
 export class ClientModule {}

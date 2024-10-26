@@ -20,11 +20,11 @@ const ProductCard = ({ product }) => {
         <Link href={`/${product.slug}`} className="w-full">
           <AspectRatio
             ratio={10 / 9}
-            className="w-full flex items-center justify-center px-2"
+            className="w-full flex items-center justify-center px-2 bg-gray-50"
           >
             <img
               src={product.images[0].image_url}
-              className="max-h-full max-w-full p-2"
+              className="h-full w-full max-h-full max-w-full bg-transparent mix-blend-multiply"
               alt={product.name}
               loading="lazy"
               decoding="async"

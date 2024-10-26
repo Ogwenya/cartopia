@@ -92,6 +92,8 @@ const EmptyCart = () => {
 const CartDetails = async () => {
 	const { data, access_token } = await fetch_cart();
 
+	console.log(data.items[0].product.images);
+
 	const totalPrice =
 		data.items.reduce((totalPrice, item) => {
 			const { after_discount_price } = calculate_discount(item.product);

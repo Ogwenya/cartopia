@@ -26,12 +26,13 @@ export class OrdersController {
   }
 
   @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  findAll(@Req() request: Request) {
+    const logged_in_user = request['logged_in_user'];
+    return this.ordersService.findAll(logged_in_user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+  @Get(':order_number')
+  findOne(@Param('order_number') order_number: string) {
+    return this.ordersService.findOne(order_number);
   }
 }
