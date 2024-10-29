@@ -14,7 +14,7 @@ async function getData(county_id) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${access_token}`,
       },
-    }
+    },
   );
 
   const county_data = await response.json();
@@ -32,13 +32,13 @@ const CountyPage = async ({ params }) => {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl">
-        Shipment locations for {county_data.name} county
+        Shipment Sub-counties for {county_data.name} county
       </h1>
 
       <div className="max-w-4xl mx-auto py-4">
         <DataTable
           columns={columns}
-          data={county_data.shipmentLocation}
+          data={county_data.shipmentTowns}
           other_button={
             <AddShipmentLocation
               access_token={access_token}

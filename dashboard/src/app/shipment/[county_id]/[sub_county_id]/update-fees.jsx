@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { AlertCircle, PenBox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,35 +18,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SubmitButton from "@/components/ui/submit-button";
-import revalidate_data from "@/app/actions";
 
-const AddCounty = ({ access_token, trigger }) => {
-  const [name, set_name] = useState("");
-  const [error, set_error] = useState(null);
+const UpdateFees = ({ ward }) => {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [loading, set_loading] = useState(false);
+  const [fees, set_fees] = useState(ward.fees);
+  const [error, set_error] = useState(null);
   const [modal_open, set_modal_open] = useState(false);
 
-  const add_county = async () => {
+  const update_location = async () => {
     set_error(null);
-
-    if (!name) {
-      set_error("Provide county name.");
+    if (!fees) {
+      set_error("Provide shipment fees.");
       return;
     }
 
     try {
       set_loading(true);
-
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v0/admin/shipment`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v0/admin/shipment/wards/${ward.id}`,
         {
-          method: "POST",
-          body: JSON.stringify({ name }),
+          method: "PATCH",
+          body: JSON.stringify({ fees }),
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
-        }
+        },
       );
 
       const result = await res.json();
@@ -53,13 +54,13 @@ const AddCounty = ({ access_token, trigger }) => {
 
       if (result.error) {
         set_error(
-          Array.isArray(result.message) ? result.message[0] : result.message
+          Array.isArray(result.message) ? result.message[0] : result.message,
         );
       } else {
-        set_name("");
+        set_fees("");
         set_error(null);
         set_modal_open(false);
-        revalidate_data("shipment");
+        router.refresh();
       }
     } catch (error) {
       set_loading(false);
@@ -70,50 +71,43 @@ const AddCounty = ({ access_token, trigger }) => {
   return (
     <Dialog open={modal_open} onOpenChange={set_modal_open}>
       <DialogTrigger asChild>
-        {trigger === "icon" ? (
-          <Button variant="outline" size="md" className="">
-            <Plus className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" className="h-8">
-            <Plus className="mr-2 h-4 w-4" />
-            Add County
-          </Button>
-        )}
+        <Button variant="ghost" size="icon">
+          <PenBox className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
-
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add County</DialogTitle>
+          <DialogTitle>Edit Shipment Ward</DialogTitle>
           <DialogDescription>
-            {error && (
+            {error ? (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
+            ) : (
+              <span> Edditing Shipment Fees for {ward.name}.</span>
             )}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 gap-y-8 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => set_name(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
+
+        <div className="grid gap-2 py-4">
+          <Label htmlFor="fees">Fees</Label>
+          <Input
+            id="fees"
+            type="number"
+            value={fees}
+            onChange={(e) => set_fees(parseFloat(e.target.value))}
+            disabled={loading}
+            required
+          />
         </div>
         <DialogFooter>
           <SubmitButton
             loading={loading}
-            onClick={add_county}
+            onClick={update_location}
             className="w-full"
           >
-            Add County
+            Save Changes
           </SubmitButton>
         </DialogFooter>
       </DialogContent>
@@ -121,4 +115,4 @@ const AddCounty = ({ access_token, trigger }) => {
   );
 };
 
-export default AddCounty;
+export default UpdateFees;

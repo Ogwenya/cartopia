@@ -7,12 +7,8 @@
       {
         "name": "@nestjs/swagger/plugin",
         "options": {
-          "dtoFileNameSuffix": [
-            ".dto.ts"
-          ],
-          "controllerFileNameSuffix": [
-            ".controller.ts"
-          ],
+          "dtoFileNameSuffix": [".dto.ts"],
+          "controllerFileNameSuffix": [".controller.ts"],
           "classValidatorShim": true,
           "dtoKeyOfComment": "description",
           "controllerKeyOfComment": "description",
@@ -21,9 +17,7 @@
       }
     ],
     "deleteOutDir": true,
-    "assets": [
-      "shared/email/templates/**/*"
-    ],
+    "assets": ["shared/email/templates/**/*", "utils/county-data.json"],
     "watchAssets": true
   }
 }

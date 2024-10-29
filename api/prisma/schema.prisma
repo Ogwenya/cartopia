@@ -115,18 +115,21 @@ model Customer {
 }
 
 model ShippingAddress {
-  id              Int       @id @default(autoincrement())
-  customer        Customer? @relation(fields: [customerId], references: [id])
-  customerId      Int?
-  name            String
-  phone_number    String
-  county          String
-  town            String
-  area            String
-  default_address Boolean   @default(false)
-  order           Order[]
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  id               Int            @id @default(autoincrement())
+  customer         Customer?      @relation(fields: [customerId], references: [id])
+  customerId       Int?
+  name             String
+  phone_number     String
+  county           ShipmentCounty @relation(fields: [shipmentCountyId], references: [id])
+  town             ShipmentTown   @relation(fields: [shipmentTownId], references: [id])
+  area             ShipmentArea   @relation(fields: [shipmentAreaId], references: [id])
+  default_address  Boolean        @default(false)
+  orders           Order[]
+  shipmentCountyId Int
+  shipmentTownId   Int
+  shipmentAreaId   Int
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
 }
 
 model Cart {
@@ -201,32 +204,35 @@ model Transaction {
 }
 
 model ShipmentCounty {
-  id            Int             @id @default(autoincrement())
-  name          String          @unique
-  shipmentTowns ShipmentTowns[]
-  active        Boolean         @default(true)
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  shipmentTowns   ShipmentTown[]
+  active          Boolean           @default(true)
+  ShippingAddress ShippingAddress[]
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
 }
 
-model ShipmentTowns {
-  id             Int            @id @default(autoincrement())
-  name           String
-  county         ShipmentCounty @relation(fields: [countyId], references: [id])
-  shipment_areas ShipmentArea[]
-  countyId       Int
-  active         Boolean        @default(true)
-  created_at     DateTime       @default(now())
-  updated_at     DateTime       @updatedAt
+model ShipmentTown {
+  id              Int               @id @default(autoincrement())
+  name            String
+  county          ShipmentCounty    @relation(fields: [countyId], references: [id])
+  shipment_areas  ShipmentArea[]
+  countyId        Int
+  active          Boolean           @default(true)
+  ShippingAddress ShippingAddress[]
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
 }
 
 model ShipmentArea {
-  id         Int           @id @default(autoincrement())
-  name       String
-  fees       Float
-  town       ShipmentTowns @relation(fields: [townId], references: [id])
-  townId     Int
-  active     Boolean       @default(true)
-  created_at DateTime      @default(now())
-  updated_at DateTime      @updatedAt
+  id              Int               @id @default(autoincrement())
+  name            String
+  fees            Float
+  town            ShipmentTown      @relation(fields: [townId], references: [id])
+  townId          Int
+  active          Boolean           @default(true)
+  ShippingAddress ShippingAddress[]
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
 }
