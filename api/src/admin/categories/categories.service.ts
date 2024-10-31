@@ -3,16 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
+import { InjectRepository } from '@nestjs/typeorm';
 import slugify from 'slugify';
+import { Repository } from 'typeorm';
+import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { PrismaService } from 'src/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Category } from 'src/database/entities/category.entity';
 
 @Injectable()
 export class CategoriesService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -24,8 +27,8 @@ export class CategoriesService {
     image: Express.Multer.File,
   ) {
     try {
-      const category_already_exist = await this.prisma.category.findUnique({
-        where: { name: createCategoryDto.name },
+      const category_already_exist = await this.categoryRepository.findOneBy({
+        name: createCategoryDto.name,
       });
 
       if (category_already_exist) {
@@ -39,19 +42,20 @@ export class CategoriesService {
         'cartopia/categories',
       );
 
-      const category = await this.prisma.category.create({
-        data: {
-          name: createCategoryDto.name,
-          slug: slugify(createCategoryDto.name, {
-            lower: true,
-            locale: 'en',
-            strict: true,
-            remove: /[*+~.()'"!:@]/g,
-          }),
-          image_url: uploaded_image.secure_url,
-          image_public_id: uploaded_image.public_id,
-        },
+      const category = this.categoryRepository.create({
+        name: createCategoryDto.name,
+        slug: slugify(createCategoryDto.name, {
+          lower: true,
+          locale: 'en',
+          strict: true,
+          remove: /[*+~.()'"!:@]/g,
+        }),
+        image_url: uploaded_image.secure_url,
+        image_public_id: uploaded_image.public_id,
       });
+
+      await this.categoryRepository.save(category);
+
       return category;
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -63,8 +67,8 @@ export class CategoriesService {
   // *******************
   async findAll() {
     try {
-      return await this.prisma.category.findMany({
-        include: {
+      return await this.categoryRepository.find({
+        relations: {
           products: true,
         },
       });
@@ -78,14 +82,26 @@ export class CategoriesService {
   // *******************
   async findOne(id: number) {
     try {
-      const category = await this.prisma.category.findUnique({
+      const category = await this.categoryRepository.findOne({
         where: { id },
+        relations: { products: true },
       });
 
       if (!category) {
         throw new NotFoundException('A category with this id does not exist.');
       }
       return category;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // *******************
+  // GET CATEGORY BY NAME
+  // *******************
+  async find_by_name(name: string) {
+    try {
+      return await this.categoryRepository.findOneBy({ name });
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -122,17 +138,14 @@ export class CategoriesService {
         data['image_public_id'] = uploaded_image.public_id;
       }
 
-      const updated_category = await this.prisma.category.update({
-        where: { id },
-        data,
-      });
+      await this.categoryRepository.update({ id }, data);
 
       if (image) {
         // remove previous service image
         await this.cloudinaryService.deleteFile(category.image_public_id);
       }
 
-      return updated_category;
+      return { message: 'Category updated successfully' };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -145,14 +158,12 @@ export class CategoriesService {
     try {
       const category = await this.findOne(id);
 
-      const deleted_category = await this.prisma.category.delete({
-        where: { id },
-      });
+      await this.categoryRepository.delete(id);
 
       // delete category image
       await this.cloudinaryService.deleteFile(category.image_public_id);
 
-      return deleted_category;
+      return { message: 'Category deleted successfully' };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

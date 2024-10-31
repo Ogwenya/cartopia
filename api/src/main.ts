@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// import * as basicAuth from 'express-basic-auth';
+import * as basicAuth from 'express-basic-auth';
 import { AppModule } from './app.module';
 const os = require('os');
 
@@ -23,16 +23,15 @@ async function bootstrap() {
     }),
   );
 
-  // if (process.env.NODE_ENV !== 'development') {
-  //   app.use(
-  //     ['/docs', '/docs-json'],
-  //     basicAuth({
-  //       challenge: true,
-  //       // this is the username and password used to authenticate
-  //       users: { admin: process.env.SWAGGER_PASSWORD },
-  //     }),
-  //   );
-  // }
+  if (process.env.NODE_ENV !== 'development') {
+    app.use(
+      ['/docs', '/docs-json'],
+      basicAuth({
+        challenge: true,
+        users: { admin: process.env.SWAGGER_PASSWORD },
+      }),
+    );
+  }
 
   const options = {
     snapshot: true,

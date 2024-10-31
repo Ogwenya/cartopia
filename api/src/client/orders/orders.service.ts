@@ -3,13 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Order } from 'src/database/entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
+  ) {}
 
   //###################################
   // ########## CREATE ORDER ##########
@@ -27,11 +32,9 @@ export class OrdersService {
   //######################################
   async findAll(customer_id: number) {
     try {
-      const orders = await this.prisma.order.findMany({
-        where: { customer_id },
-        include: {
-          items: { include: { product: { include: { images: true } } } },
-        },
+      const orders = await this.orderRepository.find({
+        where: { customer: { id: customer_id } },
+        relations: ['items', 'items.product', 'items.product.images'],
       });
 
       return orders;
@@ -45,13 +48,15 @@ export class OrdersService {
   //#################################
   async findOne(order_number: string) {
     try {
-      const order = await this.prisma.order.findUnique({
+      const order = await this.orderRepository.findOne({
         where: { order_number },
-        include: {
-          shippingAddress: true,
-          transaction_details: true,
-          items: { include: { product: { include: { images: true } } } },
-        },
+        relations: [
+          'shippingAddress',
+          'transaction_details',
+          'items',
+          'items.product',
+          'items.product.images',
+        ],
       });
 
       if (!order) {

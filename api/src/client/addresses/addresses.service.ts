@@ -3,26 +3,37 @@ import {
   Injectable,
   NotAcceptableException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { AddressDto } from './dto/address.dto';
+import { Customer } from 'src/database/entities/customer.entity';
+import { ShipmentCounty } from 'src/database/entities/shipment-county.entity';
+import { ShippingAddress } from 'src/database/entities/shipping-address.entity';
 
 @Injectable()
 export class AddressesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
+    @InjectRepository(ShipmentCounty)
+    private readonly countyRepository: Repository<ShipmentCounty>,
+    @InjectRepository(ShippingAddress)
+    private readonly addressRepository: Repository<ShippingAddress>,
+  ) {}
 
   //#########################################
   // ########## CREATE NEW ADDRESS ##########
   //#########################################
   async create(addressDto: AddressDto, customerId: number) {
     try {
-      const customer = await this.prisma.customer.findUnique({
+      const customer = await this.customerRepository.findOne({
         where: { id: customerId },
-        include: { shippingAddresses: true },
+        relations: { shippingAddresses: true },
       });
 
-      const county = await this.prisma.shipmentCounty.findUnique({
+      const county = await this.countyRepository.findOne({
         where: { name: addressDto.county },
-        include: { shipmentTowns: { include: { shipment_areas: true } } },
+        relations: ['shipmentTowns', 'shipmentTowns.shipment_areas'],
       });
 
       if (!county) {
@@ -52,28 +63,28 @@ export class AddressesService {
       }
 
       if (addressDto.is_default === true) {
-        await this.prisma.shippingAddress.updateMany({
-          where: { customerId },
-          data: { default_address: false },
-        });
+        await this.addressRepository.update(
+          { customer },
+          { default_address: false },
+        );
       }
 
-      const existing_addresses = await this.prisma.shippingAddress.count({
-        where: { customerId },
+      const existing_addresses = await this.addressRepository
+        .createQueryBuilder('shipping_address')
+        .where('shipping_address.customer = :customer', { customer })
+        .getCount();
+
+      const new_address = this.addressRepository.create({
+        customer,
+        name: addressDto.name,
+        phone_number: addressDto.phone_number,
+        county,
+        town: sub_county_exist,
+        area: ward_exist,
+        default_address: existing_addresses > 0 ? addressDto.is_default : true,
       });
 
-      const new_address = await this.prisma.shippingAddress.create({
-        data: {
-          customerId,
-          name: addressDto.name,
-          phone_number: addressDto.phone_number,
-          shipmentCountyId: county.id,
-          shipmentTownId: sub_county_exist.id,
-          shipmentAreaId: ward_exist.id,
-          default_address:
-            existing_addresses > 0 ? addressDto.is_default : true,
-        },
-      });
+      await this.addressRepository.save(new_address);
 
       return new_address;
     } catch (error) {
@@ -86,16 +97,13 @@ export class AddressesService {
   //##########################################
   async findAll(customerId: number) {
     try {
-      const addresses = await this.prisma.shippingAddress.findMany({
-        where: { customerId },
-        include: { county: true, town: true, area: true },
+      const addresses = await this.addressRepository.find({
+        where: { customer: { id: customerId } },
+        relations: { county: true, town: true, area: true },
       });
 
-      const shipment_counties = await this.prisma.shipmentCounty.findMany({
-        include: { shipmentTowns: { include: { shipment_areas: true } } },
-        orderBy: {
-          name: 'asc',
-        },
+      const shipment_counties = await this.countyRepository.find({
+        relations: ['shipmentTowns', 'shipmentTowns.shipment_areas'],
       });
 
       return { addresses, shipment_counties };
@@ -106,24 +114,13 @@ export class AddressesService {
     }
   }
 
-  //########################################
-  // ########## FIND USER ADDRESS ##########
-  //########################################
-  async findOne(id: number) {
-    try {
-      return `This action returns a #${id} address`;
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  }
-
   //##########################################
   // ########## UPDATE USER ADDRESS ##########
   //##########################################
   async update(id: number, customerId: number, addressDto: AddressDto) {
     try {
-      const address = await this.prisma.shippingAddress.findUnique({
-        where: { id, customerId },
+      const address = await this.addressRepository.findOne({
+        where: { id, customer: { id: customerId } },
       });
 
       if (!address) {
@@ -132,9 +129,9 @@ export class AddressesService {
         );
       }
 
-      const county = await this.prisma.shipmentCounty.findUnique({
+      const county = await this.countyRepository.findOne({
         where: { name: addressDto.county },
-        include: { shipmentTowns: { include: { shipment_areas: true } } },
+        relations: ['shipmentTowns', 'shipmentTowns.shipment_areas'],
       });
 
       if (!county) {
@@ -164,25 +161,25 @@ export class AddressesService {
       }
 
       if (addressDto.is_default === true) {
-        await this.prisma.shippingAddress.updateMany({
-          where: { customerId },
-          data: { default_address: false },
-        });
+        await this.addressRepository.update(
+          { customer: { id: customerId } },
+          { default_address: false },
+        );
       }
 
-      const updated_address = await this.prisma.shippingAddress.update({
-        where: { id, customerId },
-        data: {
+      await this.addressRepository.update(
+        { id },
+        {
           name: addressDto.name,
           phone_number: addressDto.phone_number,
-          shipmentCountyId: county.id,
-          shipmentTownId: sub_county_exist.id,
-          shipmentAreaId: ward_exist.id,
+          county,
+          town: sub_county_exist,
+          area: ward_exist,
           default_address: addressDto.is_default,
         },
-      });
+      );
 
-      return updated_address;
+      return { message: 'address updated successfully' };
     } catch (error) {
       throw new Error(error.message);
     }
@@ -193,25 +190,22 @@ export class AddressesService {
   //##########################################
   async remove(id: number, customerId: number) {
     try {
-      const has_non_complete_orders = await this.prisma.order.findFirst({
-        where: {
-          shippingAddressId: id,
-          customer_id: customerId,
-          status: { in: ['PENDING', 'PROCESSING', 'SHIPPED'] },
-        },
+      const address = await this.addressRepository.findOne({
+        where: { id, customer: { id: customerId } },
+        relations: { orders: true },
       });
 
-      if (has_non_complete_orders) {
-        throw new NotAcceptableException(
-          'This address is asscociates with orders that are not yet completed.',
-        );
+      for (const order of address.orders) {
+        if (['PENDING', 'PROCESSING', 'SHIPPED'].includes(order.status)) {
+          throw new NotAcceptableException(
+            'This address is asscociates with orders that are not yet completed.',
+          );
+        }
       }
 
-      const deleted_address = await this.prisma.shippingAddress.delete({
-        where: { id },
-      });
+      await this.addressRepository.remove(address);
 
-      return deleted_address;
+      return { message: 'Address successfully deleted' };
     } catch (error) {
       throw new Error(error.message);
     }

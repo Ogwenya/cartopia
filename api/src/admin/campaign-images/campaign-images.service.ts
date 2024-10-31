@@ -3,13 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { PrismaService } from 'src/prisma.service';
+import { Campaign } from 'src/database/entities/campaign.entity';
 
 @Injectable()
 export class CampaignImagesService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Campaign)
+    private readonly campaignRepository: Repository<Campaign>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -23,14 +26,14 @@ export class CampaignImagesService {
         'cartopia/campaign-images',
       );
 
-      const new_image = await this.prisma.campaign.create({
-        data: {
-          image_url: uploaded_image.secure_url,
-          image_public_id: uploaded_image.public_id,
-        },
+      const campaign_image = this.campaignRepository.create({
+        image_url: uploaded_image.secure_url,
+        image_public_id: uploaded_image.public_id,
       });
 
-      return new_image;
+      await this.campaignRepository.save(campaign_image);
+
+      return campaign_image;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -41,7 +44,7 @@ export class CampaignImagesService {
   // *************************
   async findAll() {
     try {
-      return await this.prisma.campaign.findMany();
+      return await this.campaignRepository.find();
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -52,9 +55,7 @@ export class CampaignImagesService {
   // ***********************
   async remove(id: number) {
     try {
-      const image = await this.prisma.campaign.findUnique({
-        where: { id },
-      });
+      const image = await this.campaignRepository.findOneBy({ id });
 
       if (!image) {
         throw new NotFoundException('An image with this id does not exist.');
@@ -63,10 +64,9 @@ export class CampaignImagesService {
       // delete the image from cloudinary
       await this.cloudinaryService.deleteFile(image.image_public_id);
 
-      const deleted_image = await this.prisma.campaign.delete({
-        where: { id },
-      });
-      return deleted_image;
+      await this.campaignRepository.delete(id);
+
+      return { message: 'Image successfully deleted' };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

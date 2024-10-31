@@ -1,21 +1,30 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Cart } from 'src/database/entities/cart.entity';
 import { CartDto } from './dto/cart.dto';
+import { CartItem } from 'src/database/entities/cart-item.entity';
+import { ShippingAddress } from 'src/database/entities/shipping-address.entity';
 
 @Injectable()
 export class CartService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Cart)
+    private readonly cartRepository: Repository<Cart>,
+    @InjectRepository(CartItem)
+    private readonly cartItemRepository: Repository<CartItem>,
+    @InjectRepository(ShippingAddress)
+    private readonly addressRepository: Repository<ShippingAddress>,
+  ) {}
 
   //################################
   // ########## FIND CART ##########
   //################################
   async find_cart(customer_id: number) {
     try {
-      const cart = await this.prisma.cart.findUnique({
-        where: { customer_id },
-        include: {
-          items: { include: { product: { include: { images: true } } } },
-        },
+      const cart = await this.cartRepository.findOne({
+        where: { customer: { id: customer_id } },
+        relations: ['items', 'items.product', 'items.product.images'],
       });
 
       return cart ? cart : {};
@@ -31,38 +40,50 @@ export class CartService {
   //##################################
   async update_cart(customer_id: number, cartDto: CartDto) {
     try {
-      const cart = await this.prisma.cart.findUnique({
-        where: { customer_id },
-        include: { items: true },
+      const cart = await this.cartRepository.findOne({
+        where: { customer: { id: customer_id } },
+        relations: ['items', 'items.product', 'items.product.images'],
       });
 
       const cart_item = cart
-        ? await this.prisma.cartItem.findUnique({
-            where: { cart_id: cart.id, product_id: cartDto.product_id },
+        ? await this.cartItemRepository.findOneBy({
+            cart: { id: cart.id },
+            product: { id: cartDto.product_id },
           })
         : null;
 
       switch (cartDto.operation) {
         case 'add':
-          cart_item
-            ? await this.prisma.cartItem.update({
-                where: { id: cart_item.id },
-                data: {
-                  quantity: cart_item.quantity + 1,
-                },
-              })
-            : await this.prisma.cartItem.create({
-                data: {
-                  product: { connect: { id: cartDto.product_id } },
-                  quantity: 1,
-                  cart: {
-                    connectOrCreate: {
-                      where: { id: cart.id },
-                      create: { customer: { connect: { id: customer_id } } },
-                    },
-                  },
-                },
+          if (cart_item) {
+            await this.cartItemRepository.update(
+              { id: cart_item.id },
+              { quantity: cart_item.quantity + 1 },
+            );
+          } else {
+            if (cart) {
+              const new_item = this.cartItemRepository.create({
+                product: { id: cartDto.product_id },
+                quantity: 1,
+                cart: { id: cart.id },
               });
+
+              await this.cartItemRepository.save(new_item);
+            } else {
+              const new_cart = this.cartRepository.create({
+                customer: { id: customer_id },
+              });
+
+              await this.cartRepository.save(new_cart);
+
+              const new_item = this.cartItemRepository.create({
+                product: { id: cartDto.product_id },
+                quantity: 1,
+                cart: new_cart,
+              });
+
+              await this.cartItemRepository.save(new_item);
+            }
+          }
 
           break;
 
@@ -72,22 +93,18 @@ export class CartService {
           }
 
           cart_item.quantity === 1
-            ? await this.prisma.cartItem.delete({
-                where: { id: cart_item.id },
-              })
-            : await this.prisma.cartItem.update({
-                where: { id: cart_item.id },
-                data: {
+            ? await this.cartItemRepository.remove(cart_item)
+            : await this.cartItemRepository.update(
+                { id: cart_item.id },
+                {
                   quantity: cart_item.quantity - 1,
                 },
-              });
+              );
 
           break;
 
         case 'delete':
-          await this.prisma.cartItem.delete({
-            where: { product_id: cartDto.product_id },
-          });
+          await this.cartItemRepository.remove(cart_item);
           break;
       }
 
@@ -105,16 +122,14 @@ export class CartService {
   //########################################
   async checkout(customer_id: number) {
     try {
-      const cart = await this.prisma.cart.findUnique({
-        where: { customer_id },
-        include: {
-          items: { include: { product: { include: { images: true } } } },
-        },
+      const cart = await this.cartRepository.findOne({
+        where: { customer: { id: customer_id } },
+        relations: ['items', 'items.product', 'items.product.images'],
       });
 
-      const shipping_addresses = await this.prisma.shippingAddress.findMany({
+      const shipping_addresses = await this.addressRepository.find({
         where: {
-          customerId: customer_id,
+          customer: { id: customer_id },
         },
       });
 

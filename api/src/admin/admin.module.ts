@@ -8,7 +8,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { CampaignImagesModule } from './campaign-images/campaign-images.module';
-import { PrismaService } from 'src/prisma.service';
+import { DatabaseModule } from 'src/database/database.module';
 
 const modules = [
   BrandsModule,
@@ -21,6 +21,7 @@ const modules = [
 
 @Module({
   imports: [
+    DatabaseModule,
     ...modules,
     RouterModule.register(
       modules.map((module) => {
@@ -28,7 +29,8 @@ const modules = [
       }),
     ),
   ],
-  providers: [AdminService, PrismaService],
+  providers: [AdminService],
   controllers: [AdminController],
+  exports: [DatabaseModule],
 })
 export class AdminModule {}

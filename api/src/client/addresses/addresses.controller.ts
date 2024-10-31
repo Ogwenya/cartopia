@@ -30,11 +30,6 @@ export class AddressesController {
     return this.addressesService.findAll(logged_in_user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.addressesService.findOne(+id);
-  }
-
   @Patch(':id')
   update(
     @Param('id') id: string,

@@ -1,14 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PrismaService } from 'src/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role, User } from 'src/database/entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -31,8 +34,8 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     try {
       // check if user already exist in the database
-      const user_exist = await this.prisma.user.findUnique({
-        where: { email: createUserDto.email },
+      const user_exist = await this.userRepository.findOneBy({
+        email: createUserDto.email,
       });
 
       if (user_exist) {
@@ -47,15 +50,15 @@ export class UsersService {
       const salt = await bcrypt.genSalt(10);
       const hashed_password = await bcrypt.hash(generated_password, salt);
 
-      const user = await this.prisma.user.create({
-        data: {
-          firstname: createUserDto.firstname,
-          lastname: createUserDto.lastname,
-          email: createUserDto.email,
-          password: hashed_password,
-          role: createUserDto.role,
-        },
+      const user = this.userRepository.create({
+        firstname: createUserDto.firstname,
+        lastname: createUserDto.lastname,
+        email: createUserDto.email,
+        password: hashed_password,
+        role: Role[createUserDto.role],
       });
+
+      await this.userRepository.save(user);
 
       this.eventEmitter.emit('user.send-credentials', {
         firstname: user.firstname,
@@ -75,7 +78,7 @@ export class UsersService {
   // *****************
   async findAll() {
     try {
-      const users = this.prisma.user.findMany({
+      const users = this.userRepository.find({
         select: {
           id: true,
           firstname: true,
@@ -98,25 +101,23 @@ export class UsersService {
   // *****************
   async update_user(id: number, updateUserDto: UpdateUserDto) {
     try {
-      // confirm if user exist
-      const user = await this.prisma.user.findUnique({
-        where: { id },
-      });
+      const user = await this.userRepository.findOneBy({ id });
 
       if (!user) {
         throw new BadRequestException('A user with this id does not exist.');
       }
 
-      const updated_user = await this.prisma.user.update({
-        where: { id },
-        data: {
+      await this.userRepository.update(
+        { id },
+        {
           firstname: updateUserDto.firstname,
           lastname: updateUserDto.lastname,
           email: updateUserDto.email,
-          role: updateUserDto.role,
+          role: Role[updateUserDto.role],
           is_active: updateUserDto.is_active,
         },
-      });
+      );
+
       return { message: 'User updated successfully.' };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -128,18 +129,14 @@ export class UsersService {
   // *****************
   async delete_user(id: number) {
     try {
-      // confirm if user exist
-      const user = await this.prisma.user.findUnique({
-        where: { id },
-      });
+      const user = await this.userRepository.findOneBy({ id });
 
       if (!user) {
         throw new BadRequestException('A user with this id does not exist.');
       }
 
-      const deleted_user = await this.prisma.user.delete({
-        where: { id },
-      });
+      await this.userRepository.remove(user);
+
       return { message: 'user deleted successfully' };
     } catch (error) {
       throw new BadRequestException(error.message);

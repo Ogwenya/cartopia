@@ -3,30 +3,45 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import seed_shipment_table from 'src/utils/seed_shipment_table';
 import { UpdateShipmentFeesDto } from './dto/update-shipment-fees.dto';
+import { ShipmentCounty } from 'src/database/entities/shipment-county.entity';
+import { ShipmentTown } from 'src/database/entities/shipment-town.entity';
+import { ShipmentArea } from 'src/database/entities/shipment-area.entity';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(ShipmentCounty)
+    private readonly countyRepository: Repository<ShipmentCounty>,
+    @InjectRepository(ShipmentTown)
+    private readonly townRepository: Repository<ShipmentTown>,
+    @InjectRepository(ShipmentArea)
+    private readonly areaRepository: Repository<ShipmentArea>,
+  ) {}
 
   // ***************************
   // GET ALL SHIPMENT LOCATIONS
   // ***************************
   async findAll() {
     try {
-      const counties = await this.prisma.shipmentCounty.findMany({
-        include: {
+      const counties = await this.countyRepository.find({
+        relations: {
           shipmentTowns: true,
         },
       });
 
       if (counties.length === 0) {
-        await seed_shipment_table();
+        await seed_shipment_table({
+          countyRepository: this.countyRepository,
+          townRepository: this.townRepository,
+          shipmentArea: ShipmentArea,
+        });
 
-        const counties = await this.prisma.shipmentCounty.findMany({
-          include: {
+        const counties = await this.countyRepository.find({
+          relations: {
             shipmentTowns: true,
           },
         });
@@ -45,19 +60,9 @@ export class ShipmentService {
   // ************************************
   async find_county(county_id: number) {
     try {
-      const county_data = await this.prisma.shipmentCounty.findUnique({
-        where: {
-          id: county_id,
-        },
-        include: {
-          shipmentTowns: {
-            include: {
-              _count: {
-                select: { shipment_areas: true },
-              },
-            },
-          },
-        },
+      const county_data = await this.countyRepository.findOne({
+        where: { id: county_id },
+        relations: ['shipmentTowns', 'shipmentTowns.shipment_areas'],
       });
 
       return county_data;
@@ -71,14 +76,9 @@ export class ShipmentService {
   // ************************************
   async find_sub_county(county_id: number, sub_county_id: number) {
     try {
-      const town_data = await this.prisma.shipmentTown.findUnique({
-        where: {
-          countyId: county_id,
-          id: sub_county_id,
-        },
-        include: {
-          shipment_areas: true,
-        },
+      const town_data = await this.townRepository.findOne({
+        where: { county: { id: county_id }, id: sub_county_id },
+        relations: { shipment_areas: true },
       });
 
       return town_data;
@@ -92,9 +92,7 @@ export class ShipmentService {
   // ***************************
   async update_fees(id: number, updateShipmentFeesDto: UpdateShipmentFeesDto) {
     try {
-      const ward = await this.prisma.shipmentArea.findUnique({
-        where: { id },
-      });
+      const ward = await this.areaRepository.findOneBy({ id });
 
       if (!ward) {
         throw new NotFoundException(
@@ -102,14 +100,12 @@ export class ShipmentService {
         );
       }
 
-      const updated_ward = await this.prisma.shipmentArea.update({
-        where: { id },
-        data: {
-          fees: updateShipmentFeesDto.fees,
-        },
-      });
+      await this.areaRepository.update(
+        { id },
+        { fees: updateShipmentFeesDto.fees },
+      );
 
-      return updated_ward;
+      return { message: 'Fees successfully updated' };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

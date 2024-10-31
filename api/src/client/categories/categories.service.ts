@@ -4,20 +4,35 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CategoryQueryDto } from './dto/category-query.dto';
-import { PrismaService } from 'src/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Brand } from 'src/database/entities/brand.entity';
+import { Category } from 'src/database/entities/category.entity';
+import { Product, ProductStatus } from 'src/database/entities/product.entity';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Brand)
+    private readonly brandRepository: Repository<Brand>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+  ) {}
 
   // *******************
   // GET ALL CATEGORIES
   // *******************
   async findAll() {
     try {
-      const categories = await this.prisma.category.findMany({
-        orderBy: { products: { _count: 'desc' } },
-      });
+      const categories = await this.categoryRepository
+        .createQueryBuilder('category')
+        .leftJoinAndSelect('category.products', 'products')
+        .loadRelationCountAndMap('category.productCount', 'category.products')
+        .orderBy('category.productCount', 'DESC')
+        .getMany();
+
       return categories;
     } catch (error) {
       throw new BadRequestException(
@@ -31,9 +46,7 @@ export class CategoriesService {
   // **************************
   async findOne(slug: string, categoryQueryDto: CategoryQueryDto) {
     try {
-      const category = await this.prisma.category.findUnique({
-        where: { slug },
-      });
+      const category = await this.categoryRepository.findOneBy({ slug });
 
       if (!category) {
         throw new NotFoundException();
@@ -46,26 +59,23 @@ export class CategoriesService {
 
       const skip_count = (page_number - 1) * PRODUCTS_PER_PAGE;
 
-      const products = await this.prisma.product.findMany({
-        where: { status: 'ACTIVE', category: { slug } },
+      const products = await this.productRepository.find({
+        where: { status: ProductStatus.ACTIVE, category: { slug } },
         take: PRODUCTS_PER_PAGE,
         skip: skip_count,
-        include: {
-          images: true,
-          brand: true,
-          category: true,
-        },
-        orderBy: { updated_at: 'desc' },
+        relations: ['images', 'brand', 'category'],
+        order: { updated_at: 'DESC' },
       });
 
-      const total_Products = await this.prisma.product.count({
-        where: { status: 'ACTIVE', category: { slug } },
+      const total_Products = await this.productRepository.count({
+        where: { status: ProductStatus.ACTIVE, category: { slug } },
       });
+
+      const brands = await this.brandRepository.find();
+
+      const categories = await this.categoryRepository.find();
 
       const total_pages = Math.ceil(total_Products / PRODUCTS_PER_PAGE);
-
-      const categories = await this.findAll();
-      const brands = await this.prisma.brand.findMany();
 
       return { products, total_pages, brands, categories };
     } catch (error) {

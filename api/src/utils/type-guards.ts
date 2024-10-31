@@ -1,6 +1,7 @@
 // src/utils/type-guards.ts
 
-import { User, Customer } from '@prisma/client';
+import { Customer } from 'src/database/entities/customer.entity';
+import { User } from 'src/database/entities/user.entity';
 
 // Type guards
 export function isAdministrator(user: User | Customer): user is User {

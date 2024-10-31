@@ -6,61 +6,41 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from 'src/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { isAdministrator, isCustomer } from 'src/utils/type-guards';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { User } from 'src/database/entities/user.entity';
+import { Customer } from 'src/database/entities/customer.entity';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
     private jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
-  // *****************
-  // GET USER PER ID
-  // *****************
-  async findOneById(id: number, account_type: 'administrator' | 'customer') {
-    try {
-      const user =
-        account_type === 'administrator'
-          ? await this.prisma.user.findUnique({
-              where: { id },
-            })
-          : await this.prisma.customer.findUnique({
-              where: { id },
-            });
-
-      if (!user) {
-        throw new NotFoundException('A user with this id does not exist.');
-      }
-      return user;
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-  }
-
-  // *****************
-  // GET USER PER EMAIL
-  // *****************
-  async findOneByEmail(
-    email: string,
+  // **************************
+  // GET USER PER PROVIDED KEY
+  // **************************
+  async findUser(
+    key: string,
+    value: string | number,
     account_type: 'administrator' | 'customer',
   ) {
     try {
       const user =
         account_type === 'administrator'
-          ? await this.prisma.user.findUnique({
-              where: { email },
-            })
-          : await this.prisma.customer.findUnique({
-              where: { email },
-            });
+          ? await this.userRepository.findOneBy({ [key]: value })
+          : await this.customerRepository.findOneBy({ [key]: value });
 
       if (!user) {
-        throw new NotFoundException('A user with this email does not exist.');
+        throw new NotFoundException(`A user with this ${key} does not exist.`);
       }
       return user;
     } catch (error) {
@@ -77,7 +57,7 @@ export class ProfileService {
     updateProfileDto: UpdateProfileDto,
   ) {
     try {
-      const user = await this.findOneById(id, updateProfileDto.account_type);
+      const user = await this.findUser('id', id, updateProfileDto.account_type);
 
       if (
         user.id !== logged_in_user.id ||
@@ -94,31 +74,25 @@ export class ProfileService {
         email: updateProfileDto.email,
       };
 
-      const updated_user =
-        updateProfileDto.account_type === 'administrator'
-          ? await this.prisma.user.update({
-              where: { id },
-              data,
-            })
-          : await this.prisma.customer.update({
-              where: { id },
-              data: { ...data, phone_number: updateProfileDto.phone_number },
-            });
-
       const payload = {
-        id: updated_user.id,
-        firstname: updated_user.firstname,
-        lastname: updated_user.lastname,
-        email: updated_user.email,
+        id: user.id,
+        firstname: updateProfileDto.firstname,
+        lastname: updateProfileDto.lastname,
+        email: updateProfileDto.email,
       };
 
-      if (isAdministrator(updated_user)) {
-        payload['role'] = updated_user.role;
-        payload['is_active'] = updated_user.is_active;
-      }
+      if (isAdministrator(user)) {
+        await this.userRepository.update({ id }, data);
 
-      if (isCustomer(updated_user)) {
-        payload['phone_number'] = updated_user.phone_number;
+        payload['role'] = user.role;
+        payload['is_active'] = user.is_active;
+      } else {
+        await this.customerRepository.update(
+          { id },
+          { ...data, phone_number: updateProfileDto.phone_number },
+        );
+
+        payload['phone_number'] = updateProfileDto.phone_number;
       }
 
       return {
@@ -140,7 +114,11 @@ export class ProfileService {
   ) {
     try {
       // confirm if user exist
-      const user = await this.findOneById(id, updatePasswordDto.account_type);
+      const user = await this.findUser(
+        'id',
+        id,
+        updatePasswordDto.account_type,
+      );
 
       if (
         user.id !== logged_in_user.id ||
@@ -193,14 +171,8 @@ export class ProfileService {
 
       const updated_user =
         updatePasswordDto.account_type === 'administrator'
-          ? await this.prisma.user.update({
-              where: { id },
-              data,
-            })
-          : await this.prisma.customer.update({
-              where: { id },
-              data,
-            });
+          ? await this.userRepository.update({ id }, data)
+          : await this.customerRepository.update({ id }, data);
 
       return { message: 'Password successfully changed.' };
     } catch (error) {

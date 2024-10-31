@@ -4,24 +4,39 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import slugify from 'slugify';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PrismaService } from 'src/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import {
+  DiscountType,
+  Product,
+  ProductStatus,
+} from 'src/database/entities/product.entity';
+import { ProductImage } from 'src/database/entities/product-image.entity';
+import { CategoriesService } from '../categories/categories.service';
+import { BrandsService } from '../brands/brands.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductImage)
+    private readonly productImageRepository: Repository<ProductImage>,
+    private readonly categoriesService: CategoriesService,
+    private readonly brandsService: BrandsService,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  // **************************
+  // CHECK IF CATEGORY EXIST
+  // ************************
   async check_product_category(name: string) {
     try {
-      const category = await this.prisma.category.findUnique({
-        where: { name },
-      });
+      const category = await this.categoriesService.find_by_name(name);
 
       if (!category) {
         throw new NotFoundException(
@@ -30,6 +45,25 @@ export class ProductsService {
       }
 
       return category;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // ***********************
+  // CHECK IF BRAND EXIST
+  // ***********************
+  async check_product_brand(name: string) {
+    try {
+      const brand = await this.brandsService.find_by_name(name);
+
+      if (!brand) {
+        throw new NotFoundException(
+          'Invalid product brand, create it before attempting to add a product',
+        );
+      }
+
+      return brand;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -44,8 +78,8 @@ export class ProductsService {
   ) {
     try {
       // check if product already exist
-      const product_already_exist = await this.prisma.product.findUnique({
-        where: { name: createProductDto.name },
+      const product_already_exist = await this.productRepository.findOneBy({
+        name: createProductDto.name,
       });
 
       if (product_already_exist) {
@@ -59,52 +93,47 @@ export class ProductsService {
         createProductDto.category,
       );
 
-      // upload product images
-      const product_images = await this.cloudinaryService.upload_multiple_files(
-        images,
-        'cartopia/products',
+      const product_brand = await this.check_product_brand(
+        createProductDto.brand,
       );
 
-      const new_product = await this.prisma.product.create({
-        data: {
-          name: createProductDto.name,
-          slug: slugify(createProductDto.name, {
-            lower: true,
-            locale: 'en',
-            strict: true,
-            remove: /[*+~.()'"!:@]/g,
-          }),
-          description: createProductDto.description,
-          price: parseFloat(createProductDto.price),
-          discount_type: createProductDto.discount_type,
-          discount_value: parseFloat(createProductDto.discount_value),
-          in_stock: parseInt(createProductDto.in_stock),
-          category: { connect: { id: product_category.id } },
-          brand: {
-            connectOrCreate: {
-              where: { name: createProductDto.brand },
-              create: {
-                name: createProductDto.brand,
-                slug: slugify(createProductDto.brand, {
-                  lower: true,
-                  locale: 'en',
-                  strict: true,
-                  remove: /[*+~.()'"!:@]/g,
-                }),
-              },
-            },
-          },
-          images: {
-            create: product_images,
-          },
-        },
-        include: {
-          images: true,
-          brand: true,
-          category: true,
-        },
+      // upload product images
+      const uploaded_images =
+        await this.cloudinaryService.upload_multiple_files(
+          images,
+          'cartopia/products',
+        );
+
+      const product = this.productRepository.create({
+        name: createProductDto.name,
+        slug: slugify(createProductDto.name, {
+          lower: true,
+          locale: 'en',
+          strict: true,
+          remove: /[*+~.()'"!:@]/g,
+        }),
+        description: createProductDto.description,
+        price: parseFloat(createProductDto.price),
+        discount_type: DiscountType[createProductDto.discount_type],
+        discount_value: parseFloat(createProductDto.discount_value),
+        in_stock: parseInt(createProductDto.in_stock),
+        category: product_category,
+        brand: product_brand,
       });
-      return new_product;
+
+      const product_images = uploaded_images.map((img) => {
+        const image = new ProductImage();
+        image.image_url = img.image_url;
+        image.public_id = img.public_id;
+        image.product = product;
+        return image;
+      });
+
+      product.images = product_images;
+
+      await this.productRepository.save(product);
+
+      return product;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -115,9 +144,24 @@ export class ProductsService {
   // *****************
   async findAll() {
     try {
-      return await this.prisma.product.findMany({
-        include: { orderItem: true, brand: true, category: true },
-        orderBy: { updated_at: 'desc' },
+      return await this.productRepository.find({
+        relations: { orderItem: true, brand: true, category: true },
+        order: { updated_at: 'DESC' },
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // ***************************
+  // GET ALL PRODUCTS PER BRAND
+  // ***************************
+  async find_products_per_brand(brandId: number) {
+    try {
+      return await this.productRepository.find({
+        where: { brand: { id: brandId } },
+        relations: { orderItem: true, brand: true, category: true },
+        order: { updated_at: 'DESC' },
       });
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -129,9 +173,9 @@ export class ProductsService {
   // *****************
   async findOne(slug: string) {
     try {
-      const product = await this.prisma.product.findUnique({
+      const product = await this.productRepository.findOne({
         where: { slug },
-        include: {
+        relations: {
           images: true,
           brand: true,
           category: true,
@@ -158,105 +202,57 @@ export class ProductsService {
     try {
       const product = await this.findOne(slug);
 
-      // get the category
-
       const product_category = await this.check_product_category(
         updateProductDto.category,
       );
 
-      if (images.length === 0) {
-        const updated_product = await this.prisma.product.update({
-          where: { slug },
-          data: {
-            name: updateProductDto.name,
-            slug: slugify(updateProductDto.name, {
-              lower: true,
-              locale: 'en',
-              strict: true,
-              remove: /[*+~.()'"!:@]/g,
-            }),
-            price: parseFloat(updateProductDto.price),
-            discount_type: updateProductDto.discount_type,
-            discount_value: parseFloat(updateProductDto.discount_value),
-            description: updateProductDto.description,
-            status: updateProductDto.status,
-            in_stock: parseInt(updateProductDto.in_stock),
-            category: { connect: { id: product_category.id } },
-            brand: {
-              connectOrCreate: {
-                where: { name: updateProductDto.brand },
-                create: {
-                  name: updateProductDto.brand,
-                  slug: slugify(updateProductDto.brand, {
-                    lower: true,
-                    locale: 'en',
-                    strict: true,
-                    remove: /[*+~.()'"!:@]/g,
-                  }),
-                },
-              },
-            },
-          },
-          include: {
-            images: true,
-            brand: true,
-            category: true,
-          },
-        });
+      const product_brand = await this.check_product_brand(
+        updateProductDto.brand,
+      );
 
-        return updated_product;
-      } else {
-        // upload product images
+      const updates = {
+        name: updateProductDto.name,
+        slug: slugify(updateProductDto.name, {
+          lower: true,
+          locale: 'en',
+          strict: true,
+          remove: /[*+~.()'"!:@]/g,
+        }),
+        price: parseFloat(updateProductDto.price),
+        discount_type: DiscountType[updateProductDto.discount_type],
+        discount_value: parseFloat(updateProductDto.discount_value),
+        description: updateProductDto.description,
+        status: ProductStatus[updateProductDto.status],
+        in_stock: parseInt(updateProductDto.in_stock),
+        category: product_category,
+        brand: product_brand,
+      };
+
+      Object.assign(product, updates);
+
+      if (images.length > 0) {
         const product_images =
           await this.cloudinaryService.upload_multiple_files(
             images,
             'cartopia/products',
           );
 
-        const updated_product = await this.prisma.product.update({
-          where: { slug },
-          data: {
-            name: updateProductDto.name,
-            slug: slugify(updateProductDto.name, {
-              lower: true,
-              locale: 'en',
-              strict: true,
-              remove: /[*+~.()'"!:@]/g,
-            }),
-            price: parseFloat(updateProductDto.price),
-            discount_type: updateProductDto.discount_type,
-            discount_value: parseFloat(updateProductDto.discount_value),
-            description: updateProductDto.description,
-            status: updateProductDto.status,
-            in_stock: parseInt(updateProductDto.in_stock),
-            category: { connect: { id: product_category.id } },
-            brand: {
-              connectOrCreate: {
-                where: { name: updateProductDto.brand },
-                create: {
-                  name: updateProductDto.brand,
-                  slug: slugify(updateProductDto.brand, {
-                    lower: true,
-                    locale: 'en',
-                    strict: true,
-                    remove: /[*+~.()'"!:@]/g,
-                  }),
-                },
-              },
-            },
-            images: {
-              create: product_images,
-            },
-          },
-          include: {
-            images: true,
-            brand: true,
-            category: true,
-          },
+        const new_images = product_images.map((img) => {
+          const image = new ProductImage();
+          image.image_url = img.image_url;
+          image.public_id = img.public_id;
+          image.product = product;
+          return image;
         });
 
-        return updated_product;
+        await this.productImageRepository.save(new_images);
       }
+
+      await this.productRepository.save(product);
+
+      return await this.productRepository.findOneBy({
+        id: product.id,
+      });
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -267,19 +263,7 @@ export class ProductsService {
   // ***************
   async remove(slug: string) {
     try {
-      const product = await this.prisma.product.findUnique({
-        where: { slug },
-        include: {
-          images: true,
-          brand: true,
-          category: true,
-          orderItem: true,
-        },
-      });
-
-      if (!product) {
-        throw new NotFoundException('Product does not exist.');
-      }
+      const product = await this.findOne(slug);
 
       if (product.orderItem.length > 0) {
         throw new NotAcceptableException(
@@ -287,18 +271,15 @@ export class ProductsService {
         );
       }
 
-      const deleted_product = await this.prisma.product.delete({
-        where: { slug },
-        include: { images: true },
-      });
-
-      const images = product.images;
-
-      for (let i = 0; i < images.length; i++) {
-        await this.cloudinaryService.deleteFile(images[i].public_id);
+      for (const image of product.images) {
+        await this.cloudinaryService.deleteFile(image.public_id);
       }
 
-      return deleted_product;
+      await this.productImageRepository.remove(product.images);
+
+      await this.productRepository.remove(product);
+
+      return { message: 'Product successfully deleted' };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

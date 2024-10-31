@@ -1,20 +1,23 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PrismaService } from 'src/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Customer } from 'src/database/entities/customer.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create_user(createUserDto: CreateUserDto) {
     try {
-      const user_exist = await this.prisma.customer.findUnique({
-        where: { email: createUserDto.email },
+      const user_exist = await this.customerRepository.findOneBy({
+        email: createUserDto.email,
       });
 
       if (user_exist) {
@@ -27,18 +30,18 @@ export class UsersService {
       const salt = await bcrypt.genSalt(10);
       const hashed_password = await bcrypt.hash(createUserDto.password, salt);
 
-      const user = await this.prisma.customer.create({
-        data: {
-          firstname: createUserDto.firstname,
-          lastname: createUserDto.lastname,
-          email: createUserDto.email,
-          password: hashed_password,
-        },
+      const customer = this.customerRepository.create({
+        firstname: createUserDto.firstname,
+        lastname: createUserDto.lastname,
+        email: createUserDto.email,
+        password: hashed_password,
       });
 
+      await this.customerRepository.save(customer);
+
       this.eventEmitter.emit('user.welcome-email', {
-        firstname: user.firstname,
-        email: user.email,
+        firstname: customer.firstname,
+        email: customer.email,
       });
 
       return { message: 'Account successfully created.' };

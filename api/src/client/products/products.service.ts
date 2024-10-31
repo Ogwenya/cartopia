@@ -3,19 +3,31 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like, Repository } from 'typeorm';
 import { BrandsService } from '../brands/brands.service';
 import { CategoriesService } from '../categories/categories.service';
 import { CampaignImagesService } from '../campaign-images/campaign-images.service';
 import { ProductQueryDto } from './dto/product-query.dto';
+import { Product, ProductStatus } from 'src/database/entities/product.entity';
+import { Brand } from 'src/database/entities/brand.entity';
+import { Category } from 'src/database/entities/category.entity';
+import { CartItem } from 'src/database/entities/cart-item.entity';
+import { Campaign } from 'src/database/entities/campaign.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    private prisma: PrismaService,
-    private brandService: BrandsService,
-    private categoryService: CategoriesService,
-    private campaignImagesService: CampaignImagesService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+    @InjectRepository(Brand)
+    private readonly brandRepository: Repository<Brand>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(CartItem)
+    private readonly cartItemRepository: Repository<CartItem>,
+    @InjectRepository(Campaign)
+    private readonly campaignRepository: Repository<Campaign>,
   ) {}
 
   // ******************
@@ -26,47 +38,59 @@ export class ProductsService {
       const { page, search } = productQueryDto;
       const PRODUCTS_PER_PAGE = 24;
 
-      let query = {};
-
+      // Build the query based on search term
+      let whereConditions: { [key: string]: any } = {
+        status: 'ACTIVE',
+      };
       if (search) {
-        query = {
+        whereConditions = {
           status: 'ACTIVE',
-          OR: [
-            { name: { contains: search } },
-            { brand: { name: { contains: search } } },
-            { category: { name: { contains: search } } },
+          $or: [
+            { name: Like(`%${search}%`) },
+            { 'brand.name': Like(`%${search}%`) },
+            { 'category.name': Like(`%${search}%`) },
           ],
         };
-      } else {
-        query = { status: 'ACTIVE' };
       }
 
-      // pagination
+      // Pagination setup
       const page_number = page < 1 ? 1 : page;
-
       const skip_count = (page_number - 1) * PRODUCTS_PER_PAGE;
 
-      const products = await this.prisma.product.findMany({
-        where: query,
-        take: PRODUCTS_PER_PAGE,
-        skip: skip_count,
-        include: {
-          images: true,
-          brand: true,
-          category: true,
-        },
-        orderBy: { updated_at: 'desc' },
-      });
+      // Fetch products
+      const [products, total_Products] = await Promise.all([
+        this.productRepository
+          .createQueryBuilder('product')
+          .leftJoinAndSelect('product.images', 'images')
+          .leftJoinAndSelect('product.brand', 'brand')
+          .leftJoinAndSelect('product.category', 'category')
+          .where(whereConditions)
+          .orderBy('product.updated_at', 'DESC')
+          .skip(skip_count)
+          .take(PRODUCTS_PER_PAGE)
+          .getMany(),
 
-      const total_Products = await this.prisma.product.count({ where: query });
+        this.productRepository
+          .createQueryBuilder('product')
+          .where(whereConditions)
+          .getCount(),
+      ]);
 
       const total_pages = Math.ceil(total_Products / PRODUCTS_PER_PAGE);
 
-      const categories = await this.prisma.category.findMany();
-      const brands = await this.prisma.brand.findMany();
+      const [categories, brands] = await Promise.all([
+        await this.brandRepository.find(),
+        await this.categoryRepository.find(),
+      ]);
 
-      return { products, total_pages, brands, categories };
+      return {
+        products,
+        total_pages,
+        brands,
+        categories,
+      };
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(
         'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
       );
@@ -76,29 +100,27 @@ export class ProductsService {
   // ****************************
   // GET single PRODUCT per slug
   // ****************************
-  async findOne(slug: string, customer_id: number) {
-    const include_cart_items = customer_id
-      ? {
-          where: {
-            cart: {
-              customer_id: customer_id,
-            },
-          },
-        }
-      : false;
+  async findOne(slug: string, customer_id: number | null) {
     try {
-      const product = await this.prisma.product.findUnique({
+      const product = await this.productRepository.findOne({
         where: { slug },
-        include: {
-          brand: true,
-          category: true,
-          images: true,
-          cart_items: include_cart_items,
-        },
+        relations: ['brand', 'category', 'images'],
       });
 
       if (!product) {
         throw new NotFoundException();
+      }
+
+      if (customer_id) {
+        const cartItems = await this.cartItemRepository.find({
+          where: {
+            cart: { customer: { id: customer_id } },
+            product: { id: product.id },
+          },
+          relations: ['cart'],
+        });
+
+        product.cart_items = cartItems;
       }
 
       return product;
@@ -112,81 +134,119 @@ export class ProductsService {
   // ****************************
   async get_feature_products() {
     try {
-      const brands = await this.brandService.findAll();
-      const categories = await this.categoryService.findAll();
-      const campaign_images = await this.campaignImagesService.findAll();
+      const brands = await this.brandRepository.find();
+      const categories = await this.categoryRepository.find();
+      const campaign_images = await this.campaignRepository.find();
 
-      // latest products
-      const latest_products = await this.prisma.product.findMany({
-        where: { status: 'ACTIVE' },
+      const latest_products = await this.productRepository.find({
+        where: { status: ProductStatus.ACTIVE },
+        relations: ['brand', 'category', 'images'],
         take: 20,
-        include: {
-          images: true,
-          brand: true,
-          category: true,
-        },
-        orderBy: { updated_at: 'desc' },
+        order: { updated_at: 'DESC' },
       });
 
-      // get products for top brands
-      const feature_products_per_brand = await this.prisma.brand.findMany({
-        where: {
-          products: {
-            some: {
-              status: 'ACTIVE',
-            },
-          },
-        },
-        take: 3,
-        orderBy: {
-          products: {
-            _count: 'desc',
-          },
-        },
-        include: {
-          products: {
-            where: {
-              status: 'ACTIVE',
-            },
-            include: {
-              brand: true,
-              category: true,
-              images: true,
-            },
-          },
-        },
-      });
+      const top_brand_ids = await this.brandRepository
+        .createQueryBuilder('brand')
+        .leftJoin('brand.products', 'product')
+        .select(['brand.id', 'COUNT(product.id) as productCount'])
+        .groupBy('brand.id')
+        .orderBy('productCount', 'DESC')
+        .limit(3)
+        .getRawMany();
 
-      // get products for top categories
-      const feature_products_per_category = await this.prisma.category.findMany(
-        {
-          where: {
-            products: {
-              some: {
-                status: 'ACTIVE',
-              },
-            },
-          },
-          take: 3,
-          orderBy: {
-            products: {
-              _count: 'desc',
-            },
-          },
-          include: {
-            products: {
-              where: {
-                status: 'ACTIVE',
-              },
-              include: {
-                brand: true,
-                category: true,
-                images: true,
-              },
-            },
-          },
-        },
-      );
+      const feature_products_per_brand = await this.brandRepository
+        .createQueryBuilder('brand')
+        .leftJoinAndSelect('brand.products', 'product')
+        .leftJoinAndSelect('product.images', 'productImage')
+        .where('brand.id IN (:...ids)', {
+          ids: top_brand_ids.map((b) => b.brand_id),
+        })
+        .orderBy(
+          `CASE brand.id ${top_brand_ids
+            .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
+            .join(' ')} END`,
+        )
+        .getMany();
+
+      const top_category_ids = await this.brandRepository
+        .createQueryBuilder('brand')
+        .leftJoin('brand.products', 'product')
+        .select(['brand.id', 'COUNT(product.id) as productCount'])
+        .groupBy('brand.id')
+        .orderBy('productCount', 'DESC')
+        .limit(3)
+        .getRawMany();
+
+      const feature_products_per_category = await this.categoryRepository
+        .createQueryBuilder('category')
+        .leftJoinAndSelect('category.products', 'product')
+        .leftJoinAndSelect('product.images', 'productImage')
+        .where('category.id IN (:...ids)', {
+          ids: top_category_ids.map((b) => b.brand_id),
+        })
+        .orderBy(
+          `CASE category.id ${top_category_ids
+            .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
+            .join(' ')} END`,
+        )
+        .getMany();
+
+      // const feature_products_per_brand = await this.brandRepository
+      //   .createQueryBuilder('brand')
+      //   .leftJoin('brand.products', 'product')
+      //   .select([
+      //     'brand.id',
+      //     'brand.name',
+      //     'brand.slug',
+      //     'brand.image_url',
+      //     'brand.image_public_id',
+      //     'brand.product',
+      //     'COUNT(product.id) AS productCount',
+      //   ])
+      //   .groupBy('brand.id')
+      //   .orderBy('productCount', 'DESC')
+      //   .limit(3)
+      //   .getRawMany();
+
+      // const feature_products_per_category = await this.categoryRepository
+      //   .createQueryBuilder('category')
+      //   .leftJoin('category.products', 'product')
+      //   .select([
+      //     'category.id',
+      //     'category.name',
+      //     'category.slug',
+      //     'category.image_url',
+      //     'category.image_public_id',
+      //     'COUNT(product.id) AS productCount',
+      //   ])
+      //   .groupBy('category.id')
+      //   .orderBy('productCount', 'DESC')
+      //   .limit(3)
+      //   .getRawMany();
+
+      // const feature_products_per_brand = await this.brandRepository
+      //   .createQueryBuilder('brand')
+      //   .leftJoinAndSelect('brand.products', 'product')
+      //   .leftJoinAndSelect('product.category', 'category')
+      //   .leftJoinAndSelect('product.images', 'images')
+      //   .where('product.status = :status', { status: ProductStatus.ACTIVE })
+      //   .groupBy('brand.id')
+      //   .having('COUNT(product.id) > 0')
+      //   .orderBy('COUNT(product.id)', 'DESC')
+      //   .take(3) // Limit to 3 brands
+      //   .getMany();
+
+      // const feature_products_per_category = await this.categoryRepository
+      //   .createQueryBuilder('category')
+      //   .leftJoinAndSelect('category.products', 'product')
+      //   .leftJoinAndSelect('product.brand', 'brand')
+      //   .leftJoinAndSelect('product.images', 'images')
+      //   .where('product.status = :status', { status: ProductStatus.ACTIVE })
+      //   .groupBy('category.id')
+      //   .having('COUNT(product.id) > 0')
+      //   .orderBy('COUNT(product.id)', 'DESC')
+      //   .take(3) // Limit to 3 categories
+      //   .getMany();
 
       return {
         campaign_images,
@@ -197,6 +257,7 @@ export class ProductsService {
         feature_products_per_category,
       };
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(
         'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
       );

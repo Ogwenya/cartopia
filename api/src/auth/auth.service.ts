@@ -5,19 +5,25 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PrismaService } from 'src/prisma.service';
 import { GenerateResetTokenDto } from './dto/reset-token.dto';
 import { ResetPasswordDto } from './dto/password-reset.dto';
 import { LoginDto } from './dto/login.dto';
 import { isAdministrator } from 'src/utils/type-guards';
+import { User } from 'src/database/entities/user.entity';
+import { Customer } from 'src/database/entities/customer.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
     private jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -25,22 +31,19 @@ export class AuthService {
   // ************
   // GET USER
   // ************
-  async find_user_by_email(
-    email: string,
+  async find_user_by_key(
+    key: string,
+    value: string | number,
     account_type: 'administrator' | 'customer',
   ) {
     try {
       const user =
         account_type === 'administrator'
-          ? await this.prisma.user.findUnique({
-              where: { email },
-            })
-          : await this.prisma.customer.findUnique({
-              where: { email },
-            });
+          ? await this.userRepository.findOneBy({ [key]: value })
+          : await this.customerRepository.findOneBy({ [key]: value });
 
       if (!user) {
-        throw new NotFoundException('invalid email.');
+        throw new NotFoundException(`invalid ${key}.`);
       }
 
       if (isAdministrator(user)) {
@@ -62,7 +65,8 @@ export class AuthService {
   // ************
   async login(loginDto: LoginDto) {
     try {
-      const user = await this.find_user_by_email(
+      const user = await this.find_user_by_key(
+        'email',
         loginDto.email,
         loginDto.account_type,
       );
@@ -102,7 +106,8 @@ export class AuthService {
   // *******************************
   async generateResetToken(generateResetTokenDto: GenerateResetTokenDto) {
     try {
-      const user = await this.find_user_by_email(
+      const user = await this.find_user_by_key(
+        'email',
         generateResetTokenDto.email,
         generateResetTokenDto.account_type,
       );
@@ -116,27 +121,27 @@ export class AuthService {
 
       const updated_user_with_token =
         generateResetTokenDto.account_type === 'administrator'
-          ? await this.prisma.user.update({
-              where: { email: generateResetTokenDto.email },
-              data: {
+          ? await this.userRepository.update(
+              { email: generateResetTokenDto.email },
+              {
                 password_reset_token: hashed_token,
                 password_reset_token_expiry: token_expiry,
               },
-            })
-          : await this.prisma.customer.update({
-              where: { email: generateResetTokenDto.email },
-              data: {
+            )
+          : await this.customerRepository.update(
+              { email: generateResetTokenDto.email },
+              {
                 password_reset_token: hashed_token,
                 password_reset_token_expiry: token_expiry,
               },
-            });
+            );
 
       this.eventEmitter.emit('user.reset-password', {
-        firstname: updated_user_with_token.firstname,
-        lastname: updated_user_with_token.lastname,
-        email: updated_user_with_token.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
         token: token,
-        userId: updated_user_with_token.id,
+        userId: user.id,
       });
 
       return { message: 'A password reset link has been sent to your email.' };
@@ -156,26 +161,11 @@ export class AuthService {
     try {
       const { new_password, confirm_new_password } = resetPasswordDto;
 
-      const user =
-        resetPasswordDto.account_type === 'administrator'
-          ? await this.prisma.user.findUnique({
-              where: { id },
-            })
-          : await this.prisma.customer.findUnique({
-              where: { id },
-            });
-
-      if (!user) {
-        throw new NotFoundException('A user with this email does not exist.');
-      }
-
-      if (isAdministrator(user)) {
-        if (!user.is_active) {
-          throw new ForbiddenException(
-            'This account has been deactivated, reach out to your administrator.',
-          );
-        }
-      }
+      const user = await this.find_user_by_key(
+        'id',
+        id,
+        resetPasswordDto.account_type,
+      );
 
       // check if token is correct
       if (!user.password_reset_token) {
@@ -210,22 +200,22 @@ export class AuthService {
 
       const updated_user =
         resetPasswordDto.account_type === 'administrator'
-          ? await this.prisma.user.update({
-              where: { id },
-              data: {
+          ? await this.userRepository.update(
+              { id },
+              {
                 password: new_Password_hashed,
                 password_reset_token: null,
                 password_reset_token_expiry: null,
               },
-            })
-          : await this.prisma.customer.update({
-              where: { id },
-              data: {
+            )
+          : await this.customerRepository.update(
+              { id },
+              {
                 password: new_Password_hashed,
                 password_reset_token: null,
                 password_reset_token_expiry: null,
               },
-            });
+            );
 
       return {
         message: 'Password successfully reset, you can proceed to login.',
