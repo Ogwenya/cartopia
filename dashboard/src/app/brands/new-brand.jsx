@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import SubmitButton from "@/components/ui/submit-button";
 import revalidate_data from "@/app/actions";
 
-const AddBrand = ({ access_token }) => {
+const AddBrand = ({ access_token, trigger }) => {
   const [name, set_name] = useState("");
   const [image, set_image] = useState(null);
   const [error, set_error] = useState(null);
@@ -54,7 +54,7 @@ const AddBrand = ({ access_token }) => {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },
-        }
+        },
       );
 
       const result = await res.json();
@@ -63,7 +63,7 @@ const AddBrand = ({ access_token }) => {
 
       if (result.error) {
         set_error(
-          Array.isArray(result.message) ? result.message[0] : result.message
+          Array.isArray(result.message) ? result.message[0] : result.message,
         );
       } else {
         set_name("");
@@ -80,10 +80,16 @@ const AddBrand = ({ access_token }) => {
   return (
     <Dialog open={modal_open} onOpenChange={set_modal_open}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Brand
-        </Button>
+        {trigger === "icon" ? (
+          <Button variant="outline" size="md" className="">
+            <Plus className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" className="h-8">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Brand
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">

@@ -121,6 +121,8 @@ export class ProductsService {
         brand: product_brand,
       });
 
+      await this.productRepository.save(product);
+
       const product_images = uploaded_images.map((img) => {
         const image = new ProductImage();
         image.image_url = img.image_url;
@@ -129,9 +131,7 @@ export class ProductsService {
         return image;
       });
 
-      product.images = product_images;
-
-      await this.productRepository.save(product);
+      await this.productImageRepository.save(product_images);
 
       return product;
     } catch (error) {

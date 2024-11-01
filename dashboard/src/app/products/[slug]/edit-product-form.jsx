@@ -20,12 +20,13 @@ import SubmitButton from "@/components/ui/submit-button";
 import AddCategory from "../../categories/add-category";
 import { Combobox } from "@/components/ui/combobox";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import AddBrand from "@/app/brands/new-brand";
 
 const WYSIWYGEditor = dynamic(
   () => {
     return import("@/components/WYSIWYGEditor");
   },
-  { ssr: false }
+  { ssr: false },
 );
 
 const EditProductForm = ({ product, categories, brands, access_token }) => {
@@ -141,7 +142,7 @@ const EditProductForm = ({ product, categories, brands, access_token }) => {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },
-        }
+        },
       );
 
       const result = await res.json();
@@ -198,7 +199,10 @@ const EditProductForm = ({ product, categories, brands, access_token }) => {
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="brand">Brand</Label>
+            <Label htmlFor="category" className="flex items-center gap-2">
+              <span>Brand</span>
+              <AddBrand access_token={access_token} trigger="icon" />
+            </Label>
 
             <Combobox
               entries={brands.map((brand) => {
@@ -207,7 +211,7 @@ const EditProductForm = ({ product, categories, brands, access_token }) => {
               value={brand}
               items_name="brand"
               setValue={set_brand}
-              add_if_not_found={true}
+              add_if_not_found={false}
             />
           </div>
 

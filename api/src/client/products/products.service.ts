@@ -154,19 +154,22 @@ export class ProductsService {
         .limit(3)
         .getRawMany();
 
-      const feature_products_per_brand = await this.brandRepository
-        .createQueryBuilder('brand')
-        .leftJoinAndSelect('brand.products', 'product')
-        .leftJoinAndSelect('product.images', 'productImage')
-        .where('brand.id IN (:...ids)', {
-          ids: top_brand_ids.map((b) => b.brand_id),
-        })
-        .orderBy(
-          `CASE brand.id ${top_brand_ids
-            .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
-            .join(' ')} END`,
-        )
-        .getMany();
+      const feature_products_per_brand =
+        top_brand_ids.length > 0
+          ? await this.brandRepository
+              .createQueryBuilder('brand')
+              .leftJoinAndSelect('brand.products', 'product')
+              .leftJoinAndSelect('product.images', 'productImage')
+              .where('brand.id IN (:...ids)', {
+                ids: top_brand_ids.map((b) => b.brand_id),
+              })
+              .orderBy(
+                `CASE brand.id ${top_brand_ids
+                  .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
+                  .join(' ')} END`,
+              )
+              .getMany()
+          : [];
 
       const top_category_ids = await this.brandRepository
         .createQueryBuilder('brand')
@@ -177,76 +180,22 @@ export class ProductsService {
         .limit(3)
         .getRawMany();
 
-      const feature_products_per_category = await this.categoryRepository
-        .createQueryBuilder('category')
-        .leftJoinAndSelect('category.products', 'product')
-        .leftJoinAndSelect('product.images', 'productImage')
-        .where('category.id IN (:...ids)', {
-          ids: top_category_ids.map((b) => b.brand_id),
-        })
-        .orderBy(
-          `CASE category.id ${top_category_ids
-            .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
-            .join(' ')} END`,
-        )
-        .getMany();
-
-      // const feature_products_per_brand = await this.brandRepository
-      //   .createQueryBuilder('brand')
-      //   .leftJoin('brand.products', 'product')
-      //   .select([
-      //     'brand.id',
-      //     'brand.name',
-      //     'brand.slug',
-      //     'brand.image_url',
-      //     'brand.image_public_id',
-      //     'brand.product',
-      //     'COUNT(product.id) AS productCount',
-      //   ])
-      //   .groupBy('brand.id')
-      //   .orderBy('productCount', 'DESC')
-      //   .limit(3)
-      //   .getRawMany();
-
-      // const feature_products_per_category = await this.categoryRepository
-      //   .createQueryBuilder('category')
-      //   .leftJoin('category.products', 'product')
-      //   .select([
-      //     'category.id',
-      //     'category.name',
-      //     'category.slug',
-      //     'category.image_url',
-      //     'category.image_public_id',
-      //     'COUNT(product.id) AS productCount',
-      //   ])
-      //   .groupBy('category.id')
-      //   .orderBy('productCount', 'DESC')
-      //   .limit(3)
-      //   .getRawMany();
-
-      // const feature_products_per_brand = await this.brandRepository
-      //   .createQueryBuilder('brand')
-      //   .leftJoinAndSelect('brand.products', 'product')
-      //   .leftJoinAndSelect('product.category', 'category')
-      //   .leftJoinAndSelect('product.images', 'images')
-      //   .where('product.status = :status', { status: ProductStatus.ACTIVE })
-      //   .groupBy('brand.id')
-      //   .having('COUNT(product.id) > 0')
-      //   .orderBy('COUNT(product.id)', 'DESC')
-      //   .take(3) // Limit to 3 brands
-      //   .getMany();
-
-      // const feature_products_per_category = await this.categoryRepository
-      //   .createQueryBuilder('category')
-      //   .leftJoinAndSelect('category.products', 'product')
-      //   .leftJoinAndSelect('product.brand', 'brand')
-      //   .leftJoinAndSelect('product.images', 'images')
-      //   .where('product.status = :status', { status: ProductStatus.ACTIVE })
-      //   .groupBy('category.id')
-      //   .having('COUNT(product.id) > 0')
-      //   .orderBy('COUNT(product.id)', 'DESC')
-      //   .take(3) // Limit to 3 categories
-      //   .getMany();
+      const feature_products_per_category =
+        top_category_ids.length > 0
+          ? await this.categoryRepository
+              .createQueryBuilder('category')
+              .leftJoinAndSelect('category.products', 'product')
+              .leftJoinAndSelect('product.images', 'productImage')
+              .where('category.id IN (:...ids)', {
+                ids: top_category_ids.map((b) => b.brand_id),
+              })
+              .orderBy(
+                `CASE category.id ${top_category_ids
+                  .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
+                  .join(' ')} END`,
+              )
+              .getMany()
+          : [];
 
       return {
         campaign_images,
