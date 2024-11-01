@@ -56,14 +56,14 @@ const OrderSummary = ({ items }) => {
 												<h4 className="text-sm max-md:truncate">
 													<Link
 														href={`/${item.product.slug}`}
-														className="font-medium text-primary/80"
+														className="font-medium"
 													>
 														{item.product.name}
 													</Link>
 												</h4>
 
 												{/* total price (product * quantity) */}
-												<p className="ml-6 text-sm font-medium text-primary">
+												<p className="ml-6 text-sm font-medium">
 													{(
 														item.quantity *
 														after_discount_price
@@ -99,11 +99,9 @@ const OrderSummary = ({ items }) => {
 			</CardContent>
 
 			<CardFooter className="flex-col space-y-2.5">
-				<p className="w-full flex items-center justify-between">
-					<span className="text-base font-medium text-primary">
-						Subtotal
-					</span>
-					<span className="ml-4 text-base font-medium text-primary">
+				<p className="w-full flex items-center justify-between text-base font-medium">
+					<span>Subtotal</span>
+					<span className="ml-4">
 						{sub_total.toLocaleString("en-US", {
 							style: "currency",
 							currency: "KES",
@@ -112,11 +110,9 @@ const OrderSummary = ({ items }) => {
 				</p>
 
 				{/* shipment fees */}
-				<p className="w-full flex items-center justify-between">
-					<span className="text-base font-medium text-primary">
-						Shipment
-					</span>
-					<span className="ml-4 text-base font-medium text-primary">
+				<p className="w-full flex items-center justify-between text-base font-medium">
+					<span>Shipment</span>
+					<span className="ml-4">
 						{shipment_fees.toLocaleString("en-US", {
 							style: "currency",
 							currency: "KES",
@@ -125,11 +121,9 @@ const OrderSummary = ({ items }) => {
 				</p>
 
 				{/* total */}
-				<p className="w-full flex items-center justify-between">
-					<span className="text-base font-bold text-primary">
-						Total
-					</span>
-					<span className="ml-4 text-base font-bold text-primary">
+				<p className="w-full flex items-center justify-between text-base font-bold">
+					<span>Total</span>
+					<span className="ml-4">
 						{(sub_total + shipment_fees).toLocaleString("en-US", {
 							style: "currency",
 							currency: "KES",

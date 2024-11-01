@@ -140,7 +140,7 @@ const CartDetails = async () => {
 														<h4 className="text-sm max-md:truncate">
 															<Link
 																href={`/${item.product.slug}`}
-																className="font-medium text-primary/80"
+																className="font-medium"
 															>
 																{
 																	item.product
@@ -149,7 +149,7 @@ const CartDetails = async () => {
 															</Link>
 														</h4>
 
-														<p className="ml-6 text-sm font-medium text-primary">
+														<p className="ml-6 text-sm font-medium">
 															{(
 																item.quantity *
 																after_discount_price
@@ -189,10 +189,10 @@ const CartDetails = async () => {
 						<CardFooter className="flex-col">
 							<div className="w-full">
 								<p className="flex items-center justify-between">
-									<span className="text-base font-medium text-primary">
+									<span className="text-base font-medium">
 										Subtotal
 									</span>
-									<span className="ml-4 text-base font-medium text-primary">
+									<span className="ml-4 text-base font-medium">
 										{totalPrice.toLocaleString("en-US", {
 											style: "currency",
 											currency: "KES",
@@ -214,7 +214,7 @@ const CartDetails = async () => {
 									or {""}
 									<Link
 										href="/"
-										className="inline-flex items-center gap-x-1 font-medium text-indigo-600"
+										className="inline-flex items-center gap-x-1 font-medium text-primary"
 									>
 										<span className="h-fit">
 											Continue Shopping
