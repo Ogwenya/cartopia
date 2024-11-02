@@ -19,7 +19,7 @@ const ChangeCartQuantityButtons = ({
 			<Button
 				size="sm"
 				variant="outline"
-				className="h-6 w-6 p-1"
+				className="h-5 w-5 p-2 md:h-6 md:w-6 md:p-1"
 				onClick={() =>
 					update_cart({
 						operation: "remove",
@@ -36,7 +36,7 @@ const ChangeCartQuantityButtons = ({
 			<Button
 				size="sm"
 				variant="outline"
-				className="h-6 w-6 p-1"
+				className="h-5 w-5 p-2 md:h-6 md:w-6 md:p-1"
 				onClick={() =>
 					update_cart({
 						operation: "add",

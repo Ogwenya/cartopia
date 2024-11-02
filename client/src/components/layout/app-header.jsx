@@ -36,6 +36,7 @@ const AppHeader = ({ totalCartItems }) => {
 
           <div className="flex items-center gap-6">
             {/*cart icon*/}
+
             <Link href="/cart">
               <div className="relative">
                 <ShoppingCart className="w-5 h-5 text-primary" />

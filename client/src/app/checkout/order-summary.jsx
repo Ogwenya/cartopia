@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
 	Card,
 	CardContent,
@@ -7,7 +8,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import calculate_discount from "@/lib/calculate-discounts";
-import Link from "next/link";
 
 const OrderSummary = ({ items }) => {
 	const sub_total =
@@ -20,7 +20,7 @@ const OrderSummary = ({ items }) => {
 	const shipment_fees = 0;
 
 	return (
-		<Card className="mx-auto max-w-3xl">
+		<Card className="w-full mx-auto max-w-3xl">
 			<CardHeader>
 				<CardTitle>Order Summary</CardTitle>
 			</CardHeader>
@@ -39,7 +39,7 @@ const OrderSummary = ({ items }) => {
 							return (
 								<li className="flex py-6" key={item.product.id}>
 									{/* product image */}
-									<Card className="h-24 w-24 md:h-32 md:w-32 flex items-center justify-center shadow-none">
+									<Card className="h-24 w-24 flex items-center justify-center shadow-none">
 										<img
 											src={
 												item.product.images[0].image_url
@@ -52,8 +52,8 @@ const OrderSummary = ({ items }) => {
 									<div className="ml-4 flex flex-1 flex-col md:ml-6 overflow-hidden">
 										<div>
 											{/* product name and price */}
-											<div className="flex justify-between">
-												<h4 className="text-sm max-md:truncate">
+											<div className="flex justify-between w-full">
+												<h4 className="text-sm truncate">
 													<Link
 														href={`/${item.product.slug}`}
 														className="font-medium"

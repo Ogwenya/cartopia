@@ -53,7 +53,7 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.className} bg-secondary`}>
-        <AppLayout totalCartItems={totalCartItems}>{children}</AppLayout>
+        <AppLayout totalCartItems={totalCartItems || 0}>{children}</AppLayout>
       </body>
     </html>
   );

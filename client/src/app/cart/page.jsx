@@ -92,8 +92,6 @@ const EmptyCart = () => {
 const CartDetails = async () => {
 	const { data, access_token } = await fetch_cart();
 
-	console.log(data.items[0].product.images);
-
 	const totalPrice =
 		data.items.reduce((totalPrice, item) => {
 			const { after_discount_price } = calculate_discount(item.product);
@@ -107,12 +105,12 @@ const CartDetails = async () => {
 				{data.items.length > 0 ? (
 					<>
 						<CardHeader>
-							<CardTitle className="text-center text-3xl">
+							<CardTitle className="text-center max-md:text-xl text-3xl">
 								Your Cart
 							</CardTitle>
 						</CardHeader>
 
-						<CardContent className="mt-8">
+						<CardContent className="max-md:mt-4 mt-8">
 							<ul
 								role="list"
 								className="border-b border-t border-muted list-none divide-y"
@@ -123,7 +121,7 @@ const CartDetails = async () => {
 
 									return (
 										<li className="flex py-6" key={item.id}>
-											<Card className="h-24 w-24 md:h-32 md:w-32 flex items-center justify-center shadow-none">
+											<Card className="h-24 w-24 flex items-center justify-center shadow-none">
 												<img
 													src={
 														item.product.images[0]
@@ -137,7 +135,7 @@ const CartDetails = async () => {
 											<div className="ml-4 flex flex-1 flex-col md:ml-6 overflow-hidden">
 												<div>
 													<div className="flex justify-between">
-														<h4 className="text-sm max-md:truncate">
+														<h4 className="text-xs md:text-sm max-md:truncate">
 															<Link
 																href={`/${item.product.slug}`}
 																className="font-medium"
@@ -149,7 +147,7 @@ const CartDetails = async () => {
 															</Link>
 														</h4>
 
-														<p className="ml-6 text-sm font-medium">
+														<p className="ml-6 text-xs md:text-sm font-medium">
 															{(
 																item.quantity *
 																after_discount_price
@@ -164,7 +162,7 @@ const CartDetails = async () => {
 														</p>
 													</div>
 
-													<CardDescription className="mt-1">
+													<CardDescription className="text-xs md:text-sm mt-1">
 														{after_discount_price.toLocaleString(
 															"en-US",
 															{
@@ -188,18 +186,16 @@ const CartDetails = async () => {
 
 						<CardFooter className="flex-col">
 							<div className="w-full">
-								<p className="flex items-center justify-between">
-									<span className="text-base font-medium">
-										Subtotal
-									</span>
-									<span className="ml-4 text-base font-medium">
+								<p className="flex items-center justify-between text-sm md:text-base">
+									<span className="">Subtotal</span>
+									<span className="ml-">
 										{totalPrice.toLocaleString("en-US", {
 											style: "currency",
 											currency: "KES",
 										})}
 									</span>
 								</p>
-								<CardDescription className="mt-1 text-center">
+								<CardDescription className="mt-4 text-center text-xs md:text-sm">
 									Shipping and taxes will be calculated at
 									checkout.
 								</CardDescription>
@@ -214,7 +210,7 @@ const CartDetails = async () => {
 									or {""}
 									<Link
 										href="/"
-										className="inline-flex items-center gap-x-1 font-medium text-primary"
+										className="inline-flex items-center gap-x-1 font-medium text-primary text-xs md:text-sm"
 									>
 										<span className="h-fit">
 											Continue Shopping

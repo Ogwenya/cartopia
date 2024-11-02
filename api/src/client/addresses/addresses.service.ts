@@ -64,14 +64,16 @@ export class AddressesService {
 
       if (addressDto.is_default === true) {
         await this.addressRepository.update(
-          { customer },
+          { customer: { id: customer.id } },
           { default_address: false },
         );
       }
 
       const existing_addresses = await this.addressRepository
         .createQueryBuilder('shipping_address')
-        .where('shipping_address.customer = :customer', { customer })
+        .where('shipping_address.customer.id = :customer_id', {
+          customer_id: customer.id,
+        })
         .getCount();
 
       const new_address = this.addressRepository.create({
@@ -104,6 +106,7 @@ export class AddressesService {
 
       const shipment_counties = await this.countyRepository.find({
         relations: ['shipmentTowns', 'shipmentTowns.shipment_areas'],
+        order: { name: 'ASC' },
       });
 
       return { addresses, shipment_counties };

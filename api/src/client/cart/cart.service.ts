@@ -5,6 +5,7 @@ import { Cart } from 'src/database/entities/cart.entity';
 import { CartDto } from './dto/cart.dto';
 import { CartItem } from 'src/database/entities/cart-item.entity';
 import { ShippingAddress } from 'src/database/entities/shipping-address.entity';
+import { count } from 'rxjs';
 
 @Injectable()
 export class CartService {
@@ -131,6 +132,7 @@ export class CartService {
         where: {
           customer: { id: customer_id },
         },
+        relations: { county: true, town: true, area: true },
       });
 
       return { cart, shipping_addresses };

@@ -75,10 +75,10 @@ const AccountPage = async () => {
 
 	return (
 		<div>
-			<div className="max-md:hidden">
+			<div className="max-lg:hidden">
 				<LargeScreenLayout data={data} />
 			</div>
-			<div className="md:hidden">
+			<div className="lg:hidden">
 				<SmallScreenLayout user={user} />
 			</div>
 		</div>
