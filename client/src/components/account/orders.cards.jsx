@@ -34,8 +34,13 @@ const OrdersCards = ({ orders }) => {
 									<Button
 										variant="outline"
 										className={button_color(order.status)}
+										asChild
 									>
-										View
+										<Link
+											href={`/account/orders/${order.order_number}`}
+										>
+											View
+										</Link>
 									</Button>
 								</div>
 

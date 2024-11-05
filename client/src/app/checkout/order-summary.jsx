@@ -8,17 +8,9 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import calculate_discount from "@/lib/calculate-discounts";
+import format_currency from "@/lib/format-currency";
 
-const OrderSummary = ({ items }) => {
-	const sub_total =
-		items.reduce((totalPrice, item) => {
-			const { after_discount_price } = calculate_discount(item.product);
-
-			return totalPrice + item.quantity * after_discount_price;
-		}, 0) || 0;
-
-	const shipment_fees = 0;
-
+const OrderSummary = ({ items, sub_total }) => {
 	return (
 		<Card className="w-full mx-auto max-w-3xl">
 			<CardHeader>
@@ -64,24 +56,17 @@ const OrderSummary = ({ items }) => {
 
 												{/* total price (product * quantity) */}
 												<p className="ml-6 text-sm font-medium">
-													{(
+													{format_currency(
 														item.quantity *
-														after_discount_price
-													).toLocaleString("en-US", {
-														style: "currency",
-														currency: "KES",
-													})}
+															after_discount_price,
+													)}
 												</p>
 											</div>
 
 											{/* price per product */}
 											<CardDescription className="mt-1">
-												{after_discount_price.toLocaleString(
-													"en-US",
-													{
-														style: "currency",
-														currency: "KES",
-													},
+												{format_currency(
+													after_discount_price,
 												)}
 											</CardDescription>
 										</div>
@@ -98,37 +83,10 @@ const OrderSummary = ({ items }) => {
 				</div>
 			</CardContent>
 
-			<CardFooter className="flex-col space-y-2.5">
+			<CardFooter>
 				<p className="w-full flex items-center justify-between text-base font-medium">
 					<span>Subtotal</span>
-					<span className="ml-4">
-						{sub_total.toLocaleString("en-US", {
-							style: "currency",
-							currency: "KES",
-						})}
-					</span>
-				</p>
-
-				{/* shipment fees */}
-				<p className="w-full flex items-center justify-between text-base font-medium">
-					<span>Shipment</span>
-					<span className="ml-4">
-						{shipment_fees.toLocaleString("en-US", {
-							style: "currency",
-							currency: "KES",
-						})}
-					</span>
-				</p>
-
-				{/* total */}
-				<p className="w-full flex items-center justify-between text-base font-bold">
-					<span>Total</span>
-					<span className="ml-4">
-						{(sub_total + shipment_fees).toLocaleString("en-US", {
-							style: "currency",
-							currency: "KES",
-						})}
-					</span>
+					<span className="ml-4">{format_currency(sub_total)}</span>
 				</p>
 			</CardFooter>
 		</Card>

@@ -34,7 +34,7 @@ async function getData(order_number) {
 		throw new Error(order.message);
 	}
 
-	return { order, access_token };
+	return { order, access_token: session.access_token };
 }
 
 const OrderDetails = async ({ params }) => {
@@ -43,9 +43,9 @@ const OrderDetails = async ({ params }) => {
 	const shipping_details = [
 		{ title: "Name", value: order.shippingAddress.name },
 		{ title: "Phone Number", value: order.shippingAddress.phone_number },
-		{ title: "County", value: order.shippingAddress.county },
-		{ title: "Sub-County/Town", value: order.shippingAddress.town },
-		{ title: "Ward/Area", value: order.shippingAddress.area },
+		{ title: "County", value: order.shippingAddress.county.name },
+		{ title: "Sub-County/Town", value: order.shippingAddress.town.name },
+		{ title: "Ward/Area", value: order.shippingAddress.area.name },
 	];
 
 	const order_details = [
@@ -97,7 +97,7 @@ const OrderDetails = async ({ params }) => {
 						return (
 							<li className="flex py-6" key={item.product.id}>
 								{/* product image */}
-								<Card className="h-24 w-24 md:h-32 md:w-32 bg-gray-50 flex items-center justify-center shadow-none">
+								<Card className="h-24 w-24 bg-gray-50 flex items-center justify-center shadow-none">
 									<img
 										src={item.product.images[0].image_url}
 										alt={item.product.name}

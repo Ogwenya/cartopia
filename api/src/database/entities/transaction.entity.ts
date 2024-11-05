@@ -14,10 +14,7 @@ export class Transaction {
   id: number;
 
   @Column({ unique: true })
-  transaction_id: string;
-
-  @Column()
-  phone_number: string;
+  reference: string;
 
   @Column({ type: 'float' })
   amount: number;
@@ -27,6 +24,9 @@ export class Transaction {
 
   @OneToOne(() => Order, (order) => order.transaction_details)
   order: Order;
+
+  @Column()
+  channel: string;
 
   @CreateDateColumn()
   created_at: Date;

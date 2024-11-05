@@ -31,8 +31,24 @@ export class OrdersController {
     return this.ordersService.findAll(logged_in_user.id);
   }
 
+  @Get('confirm/:transaction_reference')
+  confirm_checkout(
+    @Req() request: Request,
+    @Param('transaction_reference') transaction_reference: string,
+  ) {
+    const logged_in_user = request['logged_in_user'];
+    return this.ordersService.confirm_checkout(
+      logged_in_user.id,
+      transaction_reference,
+    );
+  }
+
   @Get(':order_number')
-  findOne(@Param('order_number') order_number: string) {
-    return this.ordersService.findOne(order_number);
+  findOne(
+    @Req() request: Request,
+    @Param('order_number') order_number: string,
+  ) {
+    const logged_in_user = request['logged_in_user'];
+    return this.ordersService.findOne(logged_in_user.id, order_number);
   }
 }

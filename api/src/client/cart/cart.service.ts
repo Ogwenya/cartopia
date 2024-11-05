@@ -5,7 +5,7 @@ import { Cart } from 'src/database/entities/cart.entity';
 import { CartDto } from './dto/cart.dto';
 import { CartItem } from 'src/database/entities/cart-item.entity';
 import { ShippingAddress } from 'src/database/entities/shipping-address.entity';
-import { count } from 'rxjs';
+import { ShipmentCounty } from 'src/database/entities/shipment-county.entity';
 
 @Injectable()
 export class CartService {
@@ -16,6 +16,8 @@ export class CartService {
     private readonly cartItemRepository: Repository<CartItem>,
     @InjectRepository(ShippingAddress)
     private readonly addressRepository: Repository<ShippingAddress>,
+    @InjectRepository(ShipmentCounty)
+    private readonly countyRepository: Repository<ShipmentCounty>,
   ) {}
 
   //################################
@@ -135,9 +137,33 @@ export class CartService {
         relations: { county: true, town: true, area: true },
       });
 
-      return { cart, shipping_addresses };
+      const shipment_counties = await this.countyRepository.find({
+        relations: ['shipmentTowns', 'shipmentTowns.shipment_areas'],
+        order: { name: 'ASC' },
+      });
+
+      return { cart, shipping_addresses, shipment_counties };
     } catch (error) {
       console.log(error);
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
+    }
+  }
+
+  //#################################
+  // ########## CLEAR CART ##########
+  //#################################
+  async clear_cart(customer_id: number) {
+    try {
+      await this.cartItemRepository.delete({
+        cart: { customer: { id: customer_id } },
+      });
+
+      await this.cartRepository.delete({ customer: { id: customer_id } });
+
+      return { message: 'Cart cleared successfully.' };
+    } catch (error) {
       throw new BadRequestException(
         'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
       );

@@ -51,12 +51,12 @@ export class Order {
   @OneToMany(() => OrderItem, (item) => item.order)
   items: OrderItem[];
 
-  @OneToOne(() => Transaction)
-  @JoinColumn({ name: 'transaction_id' })
-  transaction_details: Transaction;
+  @Column({ unique: true })
+  transaction_reference: string;
 
-  @Column({ nullable: true, unique: true })
-  transaction_id: number;
+  @OneToOne(() => Transaction)
+  @JoinColumn()
+  transaction_details: Transaction;
 
   @CreateDateColumn()
   created_at: Date;

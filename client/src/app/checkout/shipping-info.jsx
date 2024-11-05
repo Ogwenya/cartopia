@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { MapPin, Phone, User } from "lucide-react";
 import {
@@ -13,19 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import SelectAddress from "./select-address";
 
-const ShippinInformation = ({ shipping_addresses }) => {
-	const [selected_address, set_selected_address] = useState(
-		shipping_addresses.length === 1
-			? shipping_addresses[0]
-			: shipping_addresses.filter(
-					(address) => address.default_address === true,
-			  ).length > 0
-			? shipping_addresses.filter(
-					(address) => address.default_address === true,
-			  )[0]
-			: shipping_addresses[0],
-	);
-
+const ShippinInformation = ({
+	shipping_addresses,
+	selected_address,
+	set_selected_address,
+}) => {
 	return (
 		<Card>
 			<CardHeader>

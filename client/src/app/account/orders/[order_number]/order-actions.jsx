@@ -16,17 +16,16 @@ const OrderActions = ({ status, access_token }) => {
 
 	return (
 		<div>
-			{status === "PENDING" ||
-				(status === "PROCESSING" && (
-					<SubmitButton
-						className="text-sm"
-						variant="destructive"
-						loading={loading}
-						onClick={cancel_order}
-					>
-						Cancel Order
-					</SubmitButton>
-				))}
+			{status === "PROCESSING" && (
+				<SubmitButton
+					className="text-sm"
+					variant="destructive"
+					loading={loading}
+					onClick={cancel_order}
+				>
+					Cancel Order
+				</SubmitButton>
+			)}
 
 			{status === "SHIPPED" && (
 				<SubmitButton

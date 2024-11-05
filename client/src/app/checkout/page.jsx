@@ -2,6 +2,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import OrderSummary from "./order-summary";
 import ShippinInformation from "./shipping-info";
+import ProcessPayment from "./payment";
+import Checkout from "./checkout";
+import calculate_discount from "@/lib/calculate-discounts";
 
 export const metadata = {
 	title: "Checkout",
@@ -37,20 +40,26 @@ async function getData() {
 const CheckoutPage = async () => {
 	const { data, access_token } = await getData();
 
-	const { cart, shipping_addresses } = data;
+	const { cart, shipping_addresses, shipment_counties } = data;
+
+	const sub_total =
+		cart.items.reduce((totalPrice, item) => {
+			const { after_discount_price } = calculate_discount(item.product);
+
+			return totalPrice + item.quantity * after_discount_price;
+		}, 0) || 0;
 
 	return (
 		<section>
 			<div className="max-lg:space-y-5 lg:grid lg:grid-cols-2 lg:gap-4">
-				<div>
-					<ShippinInformation
-						shipping_addresses={shipping_addresses}
-					/>
+				<Checkout
+					shipping_addresses={shipping_addresses}
+					access_token={access_token}
+					shipment_counties={shipment_counties}
+					sub_total={sub_total}
+				/>
 
-					<div>Payment form</div>
-				</div>
-
-				<OrderSummary items={cart.items} />
+				<OrderSummary items={cart.items} sub_total={sub_total} />
 			</div>
 		</section>
 	);

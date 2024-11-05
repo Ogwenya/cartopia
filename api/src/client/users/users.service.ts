@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +18,9 @@ export class UsersService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  // #############################################
+  // ########## CREATE CUSTOMER ACCOUNT ##########
+  // #############################################
   async create_user(createUserDto: CreateUserDto) {
     try {
       const user_exist = await this.customerRepository.findOneBy({
@@ -52,6 +59,27 @@ export class UsersService {
     }
   }
 
+  // ##########################################
+  // ########## GET CUSTOMER DETAILS ##########
+  // ##########################################
+  async findOne(id: number) {
+    try {
+      const customer = await this.customerRepository.findOneBy({ id });
+
+      if (!customer) {
+        throw new NotFoundException();
+      }
+
+      return customer;
+    } catch (error) {
+      throw new BadRequestException(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
+    }
+  }
+  // #############################################
+  // ########## DELETE CUSTOMER ACCOUNT ##########
+  // #############################################
   remove(id: number, logged_in_user) {
     return `This action removes a #${id} user`;
   }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotAcceptableException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -118,6 +119,28 @@ export class AddressesService {
   }
 
   //##########################################
+  // ########## FIND USER ADDRESSES ##########
+  //##########################################
+  async findOne(customerId: number, address_id: number) {
+    try {
+      const address = await this.addressRepository.findOne({
+        where: { id: address_id, customer: { id: customerId } },
+        relations: { county: true, town: true, area: true, orders: true },
+      });
+
+      if (!address) {
+        throw new NotFoundException('Address not found');
+      }
+
+      return address;
+    } catch (error) {
+      throw new Error(
+        'Something went wrong, try refreshing the page or try again later.If this problem persist, let us know.',
+      );
+    }
+  }
+
+  //##########################################
   // ########## UPDATE USER ADDRESS ##########
   //##########################################
   async update(id: number, customerId: number, addressDto: AddressDto) {
@@ -193,10 +216,7 @@ export class AddressesService {
   //##########################################
   async remove(id: number, customerId: number) {
     try {
-      const address = await this.addressRepository.findOne({
-        where: { id, customer: { id: customerId } },
-        relations: { orders: true },
-      });
+      const address = await this.findOne(customerId, id);
 
       for (const order of address.orders) {
         if (['PENDING', 'PROCESSING', 'SHIPPED'].includes(order.status)) {
