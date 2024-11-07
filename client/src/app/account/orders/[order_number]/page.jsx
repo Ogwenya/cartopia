@@ -113,14 +113,14 @@ const OrderDetails = async ({ params }) => {
 											<h4 className="text-sm max-md:truncate">
 												<Link
 													href={`/${item.product.slug}`}
-													className="font-medium text-primary/80"
+													className="font-medium opacity-80"
 												>
 													{item.product.name}
 												</Link>
 											</h4>
 
 											{/* total price (product * quantity) */}
-											<p className="ml-6 text-sm font-medium text-primary">
+											<p className="ml-6 text-sm font-medium">
 												{(
 													item.quantity *
 													after_discount_price

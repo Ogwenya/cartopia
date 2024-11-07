@@ -4,10 +4,8 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { differenceInMinutes } from 'date-fns';
 import { Order, OrderStatus } from 'src/database/entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CartService } from '../cart/cart.service';
@@ -17,7 +15,6 @@ import { OrderItem } from 'src/database/entities/order-item.entity';
 import { CartItem } from 'src/database/entities/cart-item.entity';
 import { PaystackService } from 'src/shared/paystack/paystack.service';
 import { UsersService } from '../users/users.service';
-import { Transaction } from 'src/database/entities/transaction.entity';
 
 @Injectable()
 export class OrdersService {
@@ -26,62 +23,11 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
     private readonly cartService: CartService,
     private readonly addressesService: AddressesService,
     private readonly paystackService: PaystackService,
     private readonly usersService: UsersService,
   ) {}
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async update_active_nas_sessions_cache() {
-    const pending_orders = await this.orderRepository.find({
-      where: { status: OrderStatus.PENDING },
-    });
-
-    for (const order of pending_orders) {
-      const minute_differnce = differenceInMinutes(
-        new Date(),
-        new Date(order.created_at),
-      );
-      if (minute_differnce > 3) {
-        const transaction_data = await this.paystackService.verify_transaction(
-          order.transaction_reference,
-        );
-
-        const payment_status = transaction_data.data.status;
-
-        if (payment_status === 'success') {
-          const new_transaction = this.transactionRepository.create({
-            amount: transaction_data.data.amount / 100,
-            reference: transaction_data.data.reference,
-            channel: transaction_data.data.channel,
-            transaction_time: transaction_data.data.paid_at,
-            order,
-          });
-
-          await this.transactionRepository.save(new_transaction);
-
-          await this.orderRepository.update(
-            { id: order.id },
-            {
-              status: OrderStatus.PROCESSING,
-            },
-          );
-        } else if (
-          payment_status === 'abandoned' ||
-          payment_status === 'failed'
-        ) {
-          await this.orderItemRepository.delete({
-            order: { id: order.id },
-          });
-
-          await this.orderRepository.remove(order);
-        }
-      }
-    }
-  }
 
   //############################################
   // ########## GENERATE ORDER NUMBER ##########

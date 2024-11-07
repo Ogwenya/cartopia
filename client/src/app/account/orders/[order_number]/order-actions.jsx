@@ -69,6 +69,7 @@ const OrderActions = ({ status, order_number, access_token }) => {
 				<SubmitButton
 					className="text-sm"
 					variant="destructive"
+					size="sm"
 					loading={loading}
 					onClick={cancel_order}
 				>
@@ -79,6 +80,7 @@ const OrderActions = ({ status, order_number, access_token }) => {
 			{status === "SHIPPED" && (
 				<SubmitButton
 					className="text-sm"
+					size="sm"
 					loading={loading}
 					onClick={confirm_order_recieved}
 				>

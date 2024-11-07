@@ -100,10 +100,7 @@ export const columns = [
 
       return (
         <Link href={`/orders/${order_number}`}>
-          <Button
-            variant="outline"
-            className="p-2 [&>svg]:h-1 [&>svg]:w-1 text-primary"
-          >
+          <Button variant="outline" className="h-8 w-8 p-1.5 text-primary">
             <Eye />
           </Button>
         </Link>

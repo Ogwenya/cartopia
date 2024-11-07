@@ -33,6 +33,7 @@ const OrdersCards = ({ orders }) => {
 
 									<Button
 										variant="outline"
+										size="sm"
 										className={button_color(order.status)}
 										asChild
 									>
