@@ -85,6 +85,7 @@ const OrderDetails = async ({ params }) => {
 				<OrderActions
 					status={order.status}
 					access_token={access_token}
+					order_number={order.order_number}
 				/>
 			</div>
 			<div>

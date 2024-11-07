@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { CustomerGuard } from 'src/auth/customer.guard';
+import { OrderStatus } from 'src/database/entities/order.entity';
 
 @Controller('orders')
 @UseGuards(CustomerGuard)
@@ -29,6 +29,32 @@ export class OrdersController {
   findAll(@Req() request: Request) {
     const logged_in_user = request['logged_in_user'];
     return this.ordersService.findAll(logged_in_user.id);
+  }
+
+  @Patch('cancel/:order_number')
+  cancel_order(
+    @Req() request: Request,
+    @Param('order_number') order_number: string,
+  ) {
+    const logged_in_user = request['logged_in_user'];
+    return this.ordersService.update_status(
+      logged_in_user.id,
+      order_number,
+      OrderStatus.CANCELED,
+    );
+  }
+
+  @Patch('complete/:order_number')
+  complete_order(
+    @Req() request: Request,
+    @Param('order_number') order_number: string,
+  ) {
+    const logged_in_user = request['logged_in_user'];
+    return this.ordersService.update_status(
+      logged_in_user.id,
+      order_number,
+      OrderStatus.COMPLETED,
+    );
   }
 
   @Get('confirm/:transaction_reference')

@@ -9,6 +9,7 @@ import { ProductsModule } from './products/products.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { CampaignImagesModule } from './campaign-images/campaign-images.module';
 import { DatabaseModule } from 'src/database/database.module';
+import { OrdersModule } from './orders/orders.module';
 
 const modules = [
   BrandsModule,
@@ -17,6 +18,7 @@ const modules = [
   ProductsModule,
   ShipmentModule,
   UsersModule,
+  OrdersModule,
 ];
 
 @Module({

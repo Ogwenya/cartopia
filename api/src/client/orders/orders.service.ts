@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -9,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { differenceInMinutes } from 'date-fns';
 import { Order, OrderStatus } from 'src/database/entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { CartService } from '../cart/cart.service';
 import { AddressesService } from '../addresses/addresses.service';
 import { Product } from 'src/database/entities/product.entity';
@@ -179,7 +179,6 @@ export class OrdersService {
         authorization_url: initialized_transaction.data.authorization_url,
       };
     } catch (error) {
-      console.log(error);
       throw new BadRequestException(error.message);
     }
   }
@@ -256,6 +255,46 @@ export class OrdersService {
       const cleared_cart = await this.cartService.clear_cart(customer_id);
 
       return order;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  //##########################################
+  // ########## UPDATE ORDER STATUS ##########
+  //##########################################
+  async update_status(
+    customer_id: number,
+    order_number: string,
+    status: string,
+  ) {
+    try {
+      const order = await this.findOne(customer_id, order_number);
+
+      if (
+        status === OrderStatus.CANCELED &&
+        order.status !== OrderStatus.PROCESSING
+      ) {
+        throw new NotAcceptableException(
+          'You cannot cancel an order whose status is not PROCESSING',
+        );
+      }
+
+      if (
+        status === OrderStatus.COMPLETED &&
+        order.status !== OrderStatus.SHIPPED
+      ) {
+        throw new NotAcceptableException(
+          'You cannot confirm an order which has not been SHIPPED',
+        );
+      }
+
+      await this.orderRepository.update(
+        { order_number },
+        { status: OrderStatus[status] },
+      );
+
+      return { message: `Order successfully ${status}` };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -8,6 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import format_currency from "@/lib/format-currency";
+import { badge_color } from "@/lib/order-status-color";
+import { cn } from "@/lib/utils";
 
 const RecentOrders = ({ orders }) => {
   return (
@@ -22,17 +24,9 @@ const RecentOrders = ({ orders }) => {
       <TableBody>
         {orders.map((order, index) => (
           <TableRow key={index}>
-            <TableCell>{`${order.Customer.firstname} ${order.Customer.lastname}`}</TableCell>
+            <TableCell>{`${order.customer.firstname} ${order.customer.lastname}`}</TableCell>
             <TableCell>
-              <Badge
-                variant={
-                  order.status === "PENDING"
-                    ? "pending"
-                    : order.status === "COMPLETED"
-                    ? "success"
-                    : "destructive"
-                }
-              >
+              <Badge className={cn("w-fit", badge_color(order.status))}>
                 {order.status}
               </Badge>
             </TableCell>

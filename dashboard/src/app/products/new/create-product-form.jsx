@@ -208,7 +208,6 @@ const CreateProductForm = ({ categories, brands, access_token }) => {
               value={brand}
               items_name="brand"
               setValue={set_brand}
-              add_if_not_found={false}
             />
           </div>
 
@@ -224,7 +223,6 @@ const CreateProductForm = ({ categories, brands, access_token }) => {
               value={category}
               items_name="category"
               setValue={set_category}
-              add_if_not_found={false}
             />
           </div>
         </div>

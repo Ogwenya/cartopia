@@ -46,7 +46,6 @@ const EditProductForm = ({ product, categories, brands, access_token }) => {
   const [loading, set_loading] = useState(false);
 
   const update_product = async () => {
-    console.log({ discount_value: isNaN(discount_value) });
     if (!name) {
       toast({
         variant: "destructive",
@@ -211,7 +210,6 @@ const EditProductForm = ({ product, categories, brands, access_token }) => {
               value={brand}
               items_name="brand"
               setValue={set_brand}
-              add_if_not_found={false}
             />
           </div>
 
@@ -227,7 +225,6 @@ const EditProductForm = ({ product, categories, brands, access_token }) => {
               value={category}
               items_name="category"
               setValue={set_category}
-              add_if_not_found={false}
             />
           </div>
         </div>

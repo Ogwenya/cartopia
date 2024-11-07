@@ -22,7 +22,6 @@ export function Combobox({
   entries,
   value,
   setValue,
-  add_if_not_found,
   items_name,
 }) {
   const [open, setOpen] = React.useState(false);
@@ -52,19 +51,7 @@ export function Combobox({
             onValueChange={(value) => setQuery(value)}
           />
           <CommandEmpty>
-            No {items_name} found {add_if_not_found && ", click below to add"}.
-            {add_if_not_found && (
-              <Button
-                className="w-full my-2"
-                variant="secondary"
-                onClick={() => {
-                  setValue(query);
-                  setOpen(false);
-                }}
-              >
-                {query}
-              </Button>
-            )}
+            No {items_name} found.
           </CommandEmpty>
 
           <CommandGroup>
