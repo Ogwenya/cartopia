@@ -12,7 +12,12 @@ import {
 import ProductCard from "../product-card";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 
-const FeatureProductsCarousel = ({ title, slug, products }) => {
+const FeatureProductsCarousel = ({
+  title,
+  slug,
+  products,
+  show_cart_buttons,
+}) => {
   return (
     <Card className="my-10 md:shadow-none border-none md:rounded-none max-md:bg-secondary">
       <div className="flex justify-between py-3 max-md:px-2 lg:mx-8 mb-2 border-b max-md:bg-white">
@@ -45,7 +50,10 @@ const FeatureProductsCarousel = ({ title, slug, products }) => {
               key={product.id}
               className="basis-1/2 md:basis-[220px] px-1"
             >
-              <ProductCard product={product} />
+              <ProductCard
+                product={product}
+                show_cart_buttons={show_cart_buttons}
+              />
             </CarouselItem>
           ))}
         </CarouselContent>

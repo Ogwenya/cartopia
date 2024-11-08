@@ -40,7 +40,7 @@ const WishList = async () => {
 					{wishlist.map((item) => (
 						<ProductCard
 							product={item.product}
-							show_buttons={false}
+							show_cart_buttons={false}
 							key={item.id}
 						/>
 					))}

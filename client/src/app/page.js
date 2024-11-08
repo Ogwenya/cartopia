@@ -68,7 +68,11 @@ export default async function Home() {
 
         <div className="max-md:bg-secondary bg-white my-5 py-2 max-md:p-1 grid max-md:grid-cols-2 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-md:gap-1 gap-2 px-1">
           {latest_products.map((product) => (
-            <ProductCard product={product} key={product.id} />
+            <ProductCard
+              product={product}
+              show_cart_buttons={false}
+              key={product.id}
+            />
           ))}
         </div>
 
@@ -80,6 +84,7 @@ export default async function Home() {
               title={brand.name}
               slug={`/brands/${brand.slug}`}
               products={brand.products}
+              show_cart_buttons={false}
               key={index}
             />
           ))}
@@ -90,6 +95,7 @@ export default async function Home() {
               title={category.name}
               slug={`/categories/${category.slug}`}
               products={category.products}
+              show_cart_buttons={false}
               key={index}
             />
           ))}
