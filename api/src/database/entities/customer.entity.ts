@@ -10,6 +10,7 @@ import {
 import { ShippingAddress } from './shipping-address.entity';
 import { Cart } from './cart.entity';
 import { Order } from './order.entity';
+import { Wishlist } from './wish-list.entity';
 
 @Entity()
 export class Customer {
@@ -45,6 +46,9 @@ export class Customer {
 
   @OneToOne(() => Cart, (cart) => cart.customer)
   cart: Cart;
+
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.customer)
+  wishlist: Wishlist[];
 
   @CreateDateColumn()
   created_at: Date;

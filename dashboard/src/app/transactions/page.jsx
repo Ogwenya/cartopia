@@ -29,8 +29,6 @@ async function getData() {
 const TransactionsPage = async () => {
   const transactions = await getData();
 
-  console.log(transactions);
-
   return (
     <section>
       <h1 className="text-2xl">Transactions</h1>

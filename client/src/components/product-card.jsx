@@ -11,7 +11,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import calculate_discount from "@/lib/calculate-discounts";
 import AddToCartButton from "./add-to-cart-button";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, show_buttons = true }) => {
   const { after_discount_price } = calculate_discount(product);
 
   return (
@@ -55,9 +55,11 @@ const ProductCard = ({ product }) => {
         </CardDescription>
       </CardContent>
 
-      <CardFooter>
-        <AddToCartButton product={product} className="w-full" />
-      </CardFooter>
+      {show_buttons && (
+        <CardFooter>
+          <AddToCartButton product={product} className="w-full" />
+        </CardFooter>
+      )}
     </Card>
   );
 };

@@ -17,6 +17,7 @@ import { ShipmentTown } from './entities/shipment-town.entity';
 import { ShippingAddress } from './entities/shipping-address.entity';
 import { Transaction } from './entities/transaction.entity';
 import { User } from './entities/user.entity';
+import { Wishlist } from './entities/wish-list.entity';
 
 @Global()
 @Module({
@@ -53,6 +54,7 @@ import { User } from './entities/user.entity';
 			ShippingAddress,
 			Transaction,
 			User,
+			Wishlist,
 		]),
 	],
 

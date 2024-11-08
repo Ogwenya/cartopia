@@ -8,6 +8,7 @@ import { CampaignImagesModule } from './campaign-images/campaign-images.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 import { AddressesModule } from './addresses/addresses.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 const modules = [
   ProductsModule,
@@ -18,6 +19,7 @@ const modules = [
   CartModule,
   OrdersModule,
   AddressesModule,
+  WishlistModule,
 ];
 
 @Module({

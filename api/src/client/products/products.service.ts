@@ -5,9 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
-import { BrandsService } from '../brands/brands.service';
-import { CategoriesService } from '../categories/categories.service';
-import { CampaignImagesService } from '../campaign-images/campaign-images.service';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { Product, ProductStatus } from 'src/database/entities/product.entity';
 import { Brand } from 'src/database/entities/brand.entity';
@@ -102,10 +99,19 @@ export class ProductsService {
   // ****************************
   async findOne(slug: string, customer_id: number | null) {
     try {
-      const product = await this.productRepository.findOne({
-        where: { slug },
-        relations: ['brand', 'category', 'images'],
-      });
+      const product = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.brand', 'brand')
+        .leftJoinAndSelect('product.category', 'category')
+        .leftJoinAndSelect('product.images', 'images')
+        .leftJoinAndSelect(
+          'product.wishlist',
+          'wishlist',
+          'wishlist.customer.id = :customer_id',
+          { customer_id },
+        )
+        .where('product.slug = :slug', { slug })
+        .getOne();
 
       if (!product) {
         throw new NotFoundException();

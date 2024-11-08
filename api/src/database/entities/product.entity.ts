@@ -13,6 +13,7 @@ import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 import { CartItem } from './cart-item.entity';
 import { OrderItem } from './order-item.entity';
+import { Wishlist } from './wish-list.entity';
 
 export enum ProductStatus {
   ACTIVE = 'ACTIVE',
@@ -61,11 +62,7 @@ export class Product {
   orderItem: OrderItem[];
 
   @ManyToOne(() => Brand, (brand) => brand.products)
-  // @JoinColumn({ name: 'brandId' })
   brand: Brand;
-
-  // @Column()
-  // brandId: number;
 
   @ManyToOne(() => Category, (category) => category.products, {
     nullable: true,
@@ -78,6 +75,9 @@ export class Product {
 
   @OneToMany(() => CartItem, (cartItem) => cartItem.product)
   cart_items: CartItem[];
+
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.product)
+  wishlist: Wishlist[];
 
   @CreateDateColumn()
   created_at: Date;

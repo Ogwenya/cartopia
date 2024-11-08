@@ -7,6 +7,10 @@ import ProductImagesCarousel from "./product-images-carousel";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import ChangeCartQuantityButtons from "@/components/change-cart-quantity-buttons";
 import AddToCartButton from "@/components/add-to-cart-button";
+import { Button } from "@/components/ui/button";
+import { Heart } from "lucide-react";
+import { cn } from "@/lib/utils";
+import WishlistControl from "./wishlist-control";
 
 export async function generateMetadata({ params, searchParams }, parent) {
 	const product = await fetch(
@@ -117,7 +121,7 @@ const productDetails = async ({ params }) => {
 					</div>
 
 					{/*cart buttons*/}
-					<div>
+					<div className="flex items-center gap-4">
 						{quantity_in_cart > 0 ? (
 							<ChangeCartQuantityButtons
 								product={product}
@@ -132,6 +136,13 @@ const productDetails = async ({ params }) => {
 								/>
 							</div>
 						)}
+
+						<WishlistControl
+							quantity_in_cart={quantity_in_cart}
+							wishlist={product.wishlist}
+							access_token={access_token}
+							product_id={product.id}
+						/>
 					</div>
 				</div>
 			</div>
