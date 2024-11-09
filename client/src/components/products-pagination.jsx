@@ -24,13 +24,13 @@ const ProductsPagination = ({ total_pages }) => {
 
       return params.toString();
     },
-    [search_params]
+    [search_params],
   );
 
   const renderPageButton = (pageNumber) => (
     <PaginationItem>
       <PaginationLink
-        size="icon_responsive"
+        size="sm"
         href={`${pathname}?${create_query_string("page", pageNumber)}`}
         key={pageNumber}
         isActive={current_page === pageNumber}
@@ -66,7 +66,7 @@ const ProductsPagination = ({ total_pages }) => {
       buttons.push(
         <PaginationItem>
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
       buttons.push(renderPageButton(total_pages));
     }
@@ -82,7 +82,7 @@ const ProductsPagination = ({ total_pages }) => {
             <PaginationPrevious
               href={`${pathname}?${create_query_string(
                 "page",
-                current_page - 1
+                current_page - 1,
               )}`}
             />
           </PaginationItem>
@@ -95,7 +95,7 @@ const ProductsPagination = ({ total_pages }) => {
             <PaginationNext
               href={`${pathname}?${create_query_string(
                 "page",
-                current_page + 1
+                current_page + 1,
               )}`}
             />
           </PaginationItem>

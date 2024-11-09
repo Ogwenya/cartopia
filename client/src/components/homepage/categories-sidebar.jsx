@@ -14,10 +14,7 @@ const CategoriesSidebar = ({ categories }) => {
         <ScrollArea className="h-screen md:h-[80vh] top-4">
           <div className="grid grid-cols-2 gap-2 px-5">
             {categories.map((category) => (
-              <Card
-                className="py-2 border-none shadow-none rounded-none"
-                key={category.id}
-              >
+              <Card className="py-2 shadow-none" key={category.id}>
                 <Link href={`/categories/${category.slug}`}>
                   <CardContent className="py-2">
                     <AspectRatio ratio={10 / 7}>

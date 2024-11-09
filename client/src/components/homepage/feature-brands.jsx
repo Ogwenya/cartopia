@@ -1,82 +1,37 @@
-"use client";
-
 import Link from "next/link";
-import Autoplay from "embla-carousel-autoplay";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-
-const LargeScreenLayout = ({ brands }) => {
-  return (
-    <div className="grid grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2">
-      {brands.map((brand) => (
-        <Link href={`/brands/${brand.slug}`} key={brand.id}>
-          <Card>
-            <CardContent className="flex items-center justify-center p-0 py-3">
-              <span className="text-xs sm:text-base">{brand.name}</span>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
-    </div>
-  );
-};
-
-const SmallScreenLayout = ({ brands }) => {
-  return (
-    <Carousel
-      opts={{
-        align: "start",
-        loop: true,
-        scrollPrev: false,
-      }}
-      plugins={[
-        Autoplay({
-          delay: 5000,
-        }),
-      ]}
-      className="w-full"
-    >
-      <CarouselContent className="-ml-1">
-        {brands.map((brand) => (
-          <CarouselItem key={brand.id} className="pl-1 basis-1/4">
-            <Link href={`/brands/${brand.slug}`}>
-              <div className="p-1">
-                <Card>
-                  <CardContent className="flex aspect-video items-center justify-center p-3">
-                    <span className="text-xs sm:text-base">{brand.name}</span>
-                  </CardContent>
-                </Card>
-              </div>
-            </Link>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
-  );
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const FeatureBrands = ({ brands }) => {
   return (
     <section>
-      <div className="mx-auto my-5 py-5 px-4 w-full">
-        <h2 className="text-xl md:text-2xl text-primary font-bold">
-          Top Brands
-        </h2>
+      <Card className="shadow-none border-none rounded-none bg-secondary">
+        <CardHeader>
+          <CardTitle className="max-md:text-sm">Shop by Brands</CardTitle>
+        </CardHeader>
 
-        <div className="mt-6">
-          <div className="hidden md:block">
-            <LargeScreenLayout brands={brands.slice(0, 12)} />
+        <CardContent>
+          <div className="flex gap-x-2 gap-y-4 flex-wrap">
+            {brands.map((brand) => (
+              <Link href={`/brands/${brand.slug}`} key={brand.id}>
+                <div className="h-full transform overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
+                  <div className="h-12 w-12 md:h-16 md:w-16 bg-background rounded border">
+                    <img
+                      src={brand.image_url}
+                      className="h-full w-full rounded max-h-full max-w-full bg-transparent mix-blend-multiply"
+                      alt={brand.name}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center p-0 py-3">
+                    <span className="text-xs md:text-sm">{brand.name}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-
-          <div className="md:hidden">
-            <SmallScreenLayout brands={brands.slice(0, 12)} />
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </section>
   );
 };

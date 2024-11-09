@@ -20,7 +20,7 @@ const ProductCard = ({ product, show_cart_buttons = true }) => {
         <Link href={`/${product.slug}`} className="w-full">
           <AspectRatio
             ratio={10 / 9}
-            className="w-full flex items-center justify-center px-2 bg-gray-50"
+            className="w-full flex items-center justify-center"
           >
             <img
               src={product.images[0].image_url}

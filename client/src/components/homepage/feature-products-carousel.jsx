@@ -19,17 +19,14 @@ const FeatureProductsCarousel = ({
   show_cart_buttons,
 }) => {
   return (
-    <Card className="my-10 md:shadow-none border-none md:rounded-none max-md:bg-secondary">
-      <div className="flex justify-between py-3 max-md:px-2 lg:mx-8 mb-2 border-b max-md:bg-white">
-        <CardTitle className="text-xl font-bold text-muted-foreground">
+    <Card className="my-10 shadow-none border-none rounded-none">
+      <div className="flex justify-between py-3 px-2 mb-2 bg-primary text-primary-foreground">
+        <CardTitle className="text-sm md:text-xl font-bold">
           <Link href={slug}>{title}</Link>
         </CardTitle>
 
-        <Link
-          href={slug}
-          className="flex items-center gap-2 hover:underline hover:text-muted-foreground"
-        >
-          <span>View All</span>
+        <Link href={slug} className="flex items-center gap-2 hover:underline">
+          <span className="text-xs md:text-sm">View All</span>
           <ChevronRightIcon className="h-4" />
         </Link>
       </div>

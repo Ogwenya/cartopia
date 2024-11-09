@@ -59,14 +59,16 @@ export default async function Home() {
         <CategoriesSidebar categories={categories} />
       </aside>
 
-      <aside className="lg:pl-3 mt-4 w-full lg:h-screen lg:overflow-y-scroll">
-        <CampaignImages campaign_images={campaign_images} />
+      <aside className="lg:pl-3 w-full lg:h-screen lg:overflow-y-scroll">
+        {campaign_images.length > 0 && (
+          <CampaignImages campaign_images={campaign_images} />
+        )}
 
         <div className="lg:hidden my-8 lg:my-0">
           <FeatureCategories categories={categories} />
         </div>
 
-        <div className="max-md:bg-secondary bg-white my-5 py-2 max-md:p-1 grid max-md:grid-cols-2 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-md:gap-1 gap-2 px-1">
+        <div className="mt-5 mb-10 py-2 max-md:p-1 grid max-md:grid-cols-2 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-md:gap-1 gap-2 px-1">
           {latest_products.map((product) => (
             <ProductCard
               product={product}
