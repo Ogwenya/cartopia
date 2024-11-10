@@ -153,9 +153,10 @@ export class ProductsService {
 
       const top_brand_ids = await this.brandRepository
         .createQueryBuilder('brand')
-        .leftJoin('brand.products', 'product')
+        .innerJoin('brand.products', 'product')
         .select(['brand.id', 'COUNT(product.id) as productCount'])
         .groupBy('brand.id')
+        .having('COUNT(product.id) > 0')
         .orderBy('productCount', 'DESC')
         .limit(3)
         .getRawMany();
@@ -164,8 +165,8 @@ export class ProductsService {
         top_brand_ids.length > 0
           ? await this.brandRepository
               .createQueryBuilder('brand')
-              .leftJoinAndSelect('brand.products', 'product')
-              .leftJoinAndSelect('product.images', 'productImage')
+              .innerJoinAndSelect('brand.products', 'product')
+              .innerJoinAndSelect('product.images', 'productImage')
               .where('brand.id IN (:...ids)', {
                 ids: top_brand_ids.map((b) => b.brand_id),
               })
@@ -177,11 +178,12 @@ export class ProductsService {
               .getMany()
           : [];
 
-      const top_category_ids = await this.brandRepository
-        .createQueryBuilder('brand')
-        .leftJoin('brand.products', 'product')
-        .select(['brand.id', 'COUNT(product.id) as productCount'])
-        .groupBy('brand.id')
+      const top_category_ids = await this.categoryRepository
+        .createQueryBuilder('category')
+        .innerJoin('category.products', 'product')
+        .select(['category.id', 'COUNT(product.id) as productCount'])
+        .groupBy('category.id')
+        .having('COUNT(product.id) > 0')
         .orderBy('productCount', 'DESC')
         .limit(3)
         .getRawMany();
@@ -190,14 +192,14 @@ export class ProductsService {
         top_category_ids.length > 0
           ? await this.categoryRepository
               .createQueryBuilder('category')
-              .leftJoinAndSelect('category.products', 'product')
-              .leftJoinAndSelect('product.images', 'productImage')
+              .innerJoinAndSelect('category.products', 'product')
+              .innerJoinAndSelect('product.images', 'productImage')
               .where('category.id IN (:...ids)', {
-                ids: top_category_ids.map((b) => b.brand_id),
+                ids: top_category_ids.map((b) => b.category_id),
               })
               .orderBy(
                 `CASE category.id ${top_category_ids
-                  .map((b, index) => `WHEN ${b.brand_id} THEN ${index}`)
+                  .map((b, index) => `WHEN ${b.category_id} THEN ${index}`)
                   .join(' ')} END`,
               )
               .getMany()
