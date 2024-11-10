@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
 import { Card, CardTitle } from "@/components/ui/card";
 import {
   Carousel,
@@ -10,7 +11,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import ProductCard from "../product-card";
-import { ChevronRightIcon } from "@radix-ui/react-icons";
 
 const FeatureProductsCarousel = ({
   title,
@@ -19,8 +19,8 @@ const FeatureProductsCarousel = ({
   show_cart_buttons,
 }) => {
   return (
-    <Card className="my-10 shadow-none border-none rounded-none">
-      <div className="flex justify-between py-3 px-2 mb-2 bg-primary text-primary-foreground">
+    <Card className="shadow-none border-none rounded-none">
+      <div className="flex justify-between py-3 px-2 bg-white">
         <CardTitle className="text-sm md:text-xl font-bold">
           <Link href={slug}>{title}</Link>
         </CardTitle>
@@ -37,7 +37,7 @@ const FeatureProductsCarousel = ({
           loop: true,
           scrollPrev: false,
         }}
-        className="w-full mb-2 group"
+        className="w-full mb-2 py-3 group bg-secondary"
       >
         <CarouselPrevious className="left-3 z-50 disabled:cursor-not-allowed disabled:pointer-events-auto hidden group-hover:flex" />
         <CarouselNext className="right-3 z-50 disabled:cursor-not-allowed disabled:pointer-events-auto hidden group-hover:flex" />
@@ -45,7 +45,7 @@ const FeatureProductsCarousel = ({
           {products.map((product) => (
             <CarouselItem
               key={product.id}
-              className="basis-1/2 md:basis-[220px] px-1"
+              className="basis-1/2 md:basis-[250px] px-1"
             >
               <ProductCard
                 product={product}

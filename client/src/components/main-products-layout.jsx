@@ -5,7 +5,7 @@ import ShopNavbar from "./shop-navbar";
 const MainProductsLayout = ({ products, total_pages, categories, brands }) => {
   return (
     <>
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+      <div className="mx-auto mb-6">
         <ShopNavbar categories={categories} brands={brands} />
 
         {products?.length > 0 ? (

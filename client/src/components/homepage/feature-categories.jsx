@@ -4,17 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const FeatureCategories = ({ categories }) => {
   return (
     <section>
-      <Card className="shadow-none border-none rounded-none bg-secondary">
+      <Card className="shadow-none border-none rounded-none">
         <CardHeader>
           <CardTitle className="max-md:text-sm">Shop by Categories</CardTitle>
         </CardHeader>
 
         <CardContent>
-          <div className="flex gap-x-2 gap-y-4 flex-wrap">
+          <div className="grid grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(90px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3">
             {categories.map((category) => (
               <Link href={`/categories/${category.slug}`} key={category.id}>
                 <div className="h-full transform overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
-                  <div className="h-12 w-12 md:h-16 md:w-16 bg-background rounded-full border">
+                  <div className="w-full aspect-square bg-background rounded-full border">
                     <img
                       src={category.image_url}
                       className="h-full w-full rounded-full max-h-full max-w-full bg-transparent mix-blend-multiply"

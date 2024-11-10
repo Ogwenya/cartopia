@@ -54,54 +54,56 @@ export default async function Home() {
   } = data;
 
   return (
-    <section className="flex gap-x-0 h-full min-h-[calc(100vh-6rem)] relative">
-      <aside className="hidden lg:block lg:w-[500px] overflow-y-scroll relative">
-        <CategoriesSidebar categories={categories} />
-      </aside>
-
-      <aside className="lg:pl-3 w-full lg:h-screen lg:overflow-y-scroll">
-        {campaign_images.length > 0 && (
-          <CampaignImages campaign_images={campaign_images} />
-        )}
-
-        <div className="lg:hidden my-8 lg:my-0">
-          <FeatureCategories categories={categories} />
+    <section className="bg-secondary">
+      <div className="flex flex-1">
+        <div className="hidden lg:block lg:w-[500px]">
+          <CategoriesSidebar categories={categories} />
         </div>
 
-        <div className="mt-5 mb-10 py-2 max-md:p-1 grid max-md:grid-cols-2 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-md:gap-1 gap-2 px-1">
-          {latest_products.map((product) => (
-            <ProductCard
-              product={product}
-              show_cart_buttons={false}
-              key={product.id}
-            />
-          ))}
+        <div className="block w-full lg:overflow-hidden">
+          <div className="px-1 xl:px-0">
+            <div class="w-full pt-4 pb-20 lg:py-7 space-y-6">
+              {campaign_images.length > 0 && (
+                <CampaignImages campaign_images={campaign_images} />
+              )}
+
+              <div className="lg:hidden lg:my-0">
+                <FeatureCategories categories={categories} />
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-1 md:gap-3">
+                {latest_products.map((product) => (
+                  <ProductCard product={product} key={product.id} />
+                ))}
+              </div>
+
+              <FeatureBrands brands={brands} />
+
+              {feature_products_per_brand &&
+                feature_products_per_brand.map((brand, index) => (
+                  <FeatureProductsCarousel
+                    title={brand.name}
+                    slug={`/brands/${brand.slug}`}
+                    products={brand.products}
+                    show_cart_buttons={false}
+                    key={index}
+                  />
+                ))}
+
+              {feature_products_per_category &&
+                feature_products_per_category.map((category, index) => (
+                  <FeatureProductsCarousel
+                    title={category.name}
+                    slug={`/categories/${category.slug}`}
+                    products={category.products}
+                    show_cart_buttons={false}
+                    key={index}
+                  />
+                ))}
+            </div>
+          </div>
         </div>
-
-        <FeatureBrands brands={brands} />
-
-        {feature_products_per_brand &&
-          feature_products_per_brand.map((brand, index) => (
-            <FeatureProductsCarousel
-              title={brand.name}
-              slug={`/brands/${brand.slug}`}
-              products={brand.products}
-              show_cart_buttons={false}
-              key={index}
-            />
-          ))}
-
-        {feature_products_per_category &&
-          feature_products_per_category.map((category, index) => (
-            <FeatureProductsCarousel
-              title={category.name}
-              slug={`/categories/${category.slug}`}
-              products={category.products}
-              show_cart_buttons={false}
-              key={index}
-            />
-          ))}
-      </aside>
+      </div>
     </section>
   );
 }

@@ -52,7 +52,7 @@ export default async function RootLayout({ children }) {
   const totalCartItems = await fetch_cart();
   return (
     <html lang="en">
-      <body className={`${inter.className} `}>
+      <body className={`${inter.className} bg-secondary`}>
         <AppLayout totalCartItems={totalCartItems || 0}>{children}</AppLayout>
       </body>
     </html>

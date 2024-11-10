@@ -9,7 +9,7 @@ export default function AppLayout({ totalCartItems = 0, children }) {
   return (
     <SessionProvider>
       <AppHeader totalCartItems={totalCartItems} />
-      <main className="max-w-9xl mx-auto px-1 sm:px-2 md:px-8">{children}</main>
+      <main className="max-w-9xl mx-auto lg:px-3">{children}</main>
       <AppFooter />
       <Toaster />
     </SessionProvider>
