@@ -1,5 +1,4 @@
 import {
-  ArrowLeft,
   Heart,
   Lock,
   MapPin,

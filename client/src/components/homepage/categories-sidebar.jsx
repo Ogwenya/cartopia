@@ -5,7 +5,7 @@ import Sticky from "react-stickynode";
 
 const CategoriesSidebar = ({ categories }) => {
   return (
-    <Sticky enabled={true} top={80}>
+    <Sticky enabled={true} top={80} bottomBoundary="#main-content">
       <div className="p-5">
         <div className="grid grid-cols-2 gap-4">
           {categories.map((category) => (

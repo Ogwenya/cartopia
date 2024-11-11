@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { MapPin, User, ShoppingCart } from "lucide-react";
-import { ReaderIcon } from "@radix-ui/react-icons";
+import { MapPin, User, ShoppingCart, Heart, TicketPercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +14,14 @@ import SearchBar from "../search-bar";
 
 const AppHeader = ({ totalCartItems }) => {
   const { data: session } = useSession();
+
+  const dropdown_links = [
+    { title: "Account", url: "/account", icon: User },
+    { title: "Orders", url: "/account/orders", icon: ShoppingCart },
+    { title: "Address Book", url: "/account/addresses", icon: MapPin },
+    { title: "Wish List", url: "/account/wish-list", icon: Heart },
+    { title: "Vouchers", url: "/account/vouchers", icon: TicketPercent },
+  ];
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur flex-none transition-colors duration-500 lg:z-50 bg-white/95 supports-backdrop-blur:bg-white/60">
@@ -61,30 +68,15 @@ const AppHeader = ({ totalCartItems }) => {
               <DropdownMenuContent align="end">
                 {session ? (
                   <>
-                    <DropdownMenuItem>
-                      <Link href="/account" className="flex items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Account</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link
-                        href="/account/orders"
-                        className="flex items-center"
-                      >
-                        <ReaderIcon className="mr-2 h-4 w-4" />
-                        <span>Orders</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link
-                        href="/account/addresses"
-                        className="flex items-center"
-                      >
-                        <MapPin className="mr-2 h-4 w-4" />
-                        <span>Address Book</span>
-                      </Link>
-                    </DropdownMenuItem>
+                    {dropdown_links.map((item) => (
+                      <DropdownMenuItem key={item.title}>
+                        <Link href={item.url} className="flex items-center">
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={() => signOut({ callbackUrl: "/" })}
