@@ -6,20 +6,18 @@ This is an e-commerce system comprising the api(NestJs and MySQL), dashboard(Nex
 
 ### Implemented Features
 
+- [x] User registration and login
+- [x] Product listing and search
+- [x] Shopping cart management
+- [x] Order checkout and payment processing
+- [x] Wishlist functionality
+
 ### Features to be Implemented
 
-- [ ] User registration and login
-- [ ] Product listing and search
-- [ ] Shopping cart management
-- [ ] Order checkout and payment processing
-- [ ] Wishlist functionality
 - [ ] Product reviews and ratings
 - [ ] Personalized recommendations
-- [ ] M-Pesa payment options
-- [ ] Order tracking
 - [ ] Customer support chat
-- [ ] Mobile app integration
-- [ ] Discount coupons and promotions
+- [ ] vouchers
 
 ## Getting Started
 
